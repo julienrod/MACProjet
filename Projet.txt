@@ -1,0 +1,6 @@
+Un boat télégramme retournant des recettes de patisseries.
+Il pourra :
+* Nous retourner une recette de façon aléatoire.
+* Nous retourner une recette selon les ingrédients spécifiés.
+
+Il comportera 4 champs : Id, titre, ingrédients et recettes.
