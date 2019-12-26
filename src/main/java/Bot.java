@@ -128,11 +128,39 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.equals("/random")) {
             }else if (message_text.startsWith("/receipesbyname ")) {
             }else if (message_text.startsWith("/receipesbyingredients ")) {
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                rowInline.add(new InlineKeyboardButton().setText("Like these ingredients").setCallbackData("update_msg_text"));
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/receipesbyuser ")) {
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                rowInline.add(new InlineKeyboardButton().setText("Like this user").setCallbackData("update_msg_text"));
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/receipesbycalory ")) {
             }else if (message_text.startsWith("/receipesbymachine ")) {
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                rowInline.add(new InlineKeyboardButton().setText("Like these machines").setCallbackData("update_msg_text"));
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/receipesbytime ")) {
             }else if (message_text.startsWith("/showreceipe ")) {
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("update_msg_text"));
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
             }else if (message_text.equals("/userscooking")) {
             }else if (message_text.startsWith("/recommandations ")) {
             }else if (message_text.equals("/help")) {
