@@ -11,7 +11,7 @@ public class Main {
         try {
             botsApi.registerBot(new Bot());
         } catch (TelegramApiRequestException e) {
-            e.printStackTrace( );
+            e.printStackTrace();
         }
     }
 }

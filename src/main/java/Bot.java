@@ -209,7 +209,7 @@ public class Bot extends TelegramLongPollingBot {
         return "1057276327:AAHJLLnJ-4kCdQWe5hCnFtJB5V8ZGf7FTwY";
     }
 
-    private void newRecipeSinglePhrase(long id, String recipeName){
+    private void newRecipeSinglePhrase(long id, String recipeName) {
         int state = addRecipeStatus.get(id) == null ? -1 : addRecipeStatus.get(id);
         List<List<String>> newRecipe = new ArrayList<>();
         List<String> name = new ArrayList<>();

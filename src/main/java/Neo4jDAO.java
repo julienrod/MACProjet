@@ -17,7 +17,7 @@ public class Neo4jDAO implements AutoCloseable
 
     private Neo4jDAO()
     {
-        driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "bot", "SyugarDaddy4j"  ) );
+        driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic( "bot", "SyugarDaddy4j"));
     }
 
     public static Neo4jDAO getInstance(){
@@ -37,11 +37,10 @@ public class Neo4jDAO implements AutoCloseable
     {
         String args = id;
         for(String c : collections)
-
         {
             args += ":" + c;
         }
-        StatementResult result = runRequest("MERGE ("+ args +"{name:'"+ id + "'}) ");
+        StatementResult result = runRequest("MERGE ("+ args +"{name:'"+ id + "'})");
         return result;
     }
 
@@ -57,7 +56,7 @@ public class Neo4jDAO implements AutoCloseable
                            List<String> subCategories) {
         List<String> collections = new LinkedList<>();
         collections.add("Receipe");
-        for(String sub : subCategories){
+        for(String sub : subCategories) {
             collections.add(sub);
         }
         addNode("_" + receipe_id, collections);
