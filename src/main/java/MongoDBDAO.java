@@ -15,41 +15,42 @@ import static com.mongodb.client.model.Filters.eq;
 public class MongoDBDAO {
     private static MongoDBDAO instance;
     private MongoDBDAO(){}
-    public static MongoDBDAO getInstance(){
-        if(instance == null){
+    public static MongoDBDAO getInstance() {
+        if(instance == null) {
             instance = new MongoDBDAO();
         }
         return instance;
     }
-    public void check(String first_name, String last_name, int user_id, String username) {
+    public void check(String firstName, String lastName, int userId, String username) {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
-        long found = collection.count(Document.parse("{id : " + Integer.toString(user_id) + "}"));
+
+        long found = collection.count(Document.parse("{id : " + Integer.toString(userId) + "}"));
         if (found == 0) {
-            Document doc = new Document("first_name", first_name)
-                    .append("last_name", last_name)
-                    .append("id", user_id)
+            Document doc = new Document("first_name", firstName)
+                    .append("last_name", lastName)
+                    .append("id", userId)
                     .append("username", username);
             collection.insertOne(doc);
             mongoClient.close();
             List<String> collections = Arrays.asList("User");
-            Neo4jDAO.getInstance().addNode("_" + user_id, collections);
-            System.out.println("User not exists in database. Written.");
+            Neo4jDAO.getInstance().addNode("_" + userId, collections);
+            System.out.println("User doesn't exist in database. Written.");
         } else {
-            System.out.println("User exists in database.");
+            System.out.println("User already exists in database.");
             mongoClient.close();
         }
     }
 
-    public ObjectId addreceipe(String receipeName, String receipeDescription, String time, String kcal){
+    public ObjectId addRecipe(String recipeName, String recipeDescription, String time, String kcal) {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
-        MongoCollection<Document> collection = database.getCollection("receipe");
-        Document doc = new Document("name", receipeName)
-                .append("description", receipeDescription)
+        MongoCollection<Document> collection = database.getCollection("recipe");
+        Document doc = new Document("name", recipeName)
+                .append("description", recipeDescription)
                 .append("time", time)
                 .append("kcal", kcal);
         collection.insertOne(doc);
