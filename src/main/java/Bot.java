@@ -127,7 +127,7 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.equals("/reset")) {
                 addRecipeData.remove(userId);
                 addRecipeStatus.remove(userId);
-                message = new SendMessage( ).setChatId(chat_id).setText("L'ajout de recette a été avorté");
+                message = new SendMessage().setChatId(chat_id).setText("L'ajout de recette a été avorté");
             }else if (message_text.equals("/random")) {
             }else if (message_text.startsWith("/getRecipe ")) {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
@@ -174,10 +174,27 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.equals("/userscooking")) {
-            }else if (message_text.startsWith("/recommendations ")) {
+            }else if (message_text.startsWith("/recommendations")) {
             }else if (message_text.equals("/help")) {
+                message = new SendMessage().setChatId(chat_id).setText(
+                        "/markup -> ???\n" +
+                        "/hide -> ???\n" +
+                        "/neo4j -> ???\n" +
+                        "/newrecipe [nom] -> ???\n" +
+                        "/reset -> ???\n" +
+                        "/random -> ???\n" +
+                        "/recipesbyname [nom] -> ???\n" +
+                        "/recepesbyingredients [i1, i2, ...] -> ???\n" +
+                        "/recipesbyuser [utilisateur] -> ???\n" +
+                        "/recipesbycalory [calories] -> ???\n" +
+                        "/recipesbymachine [m1, m2, ...] -> ???\n" +
+                        "/recipesbytime [temps] -> ???\n" +
+                        "/showrecipe [recette] -> ???\n" +
+                        "/userscooking -> ???\n" +
+                        "/recommendations -> ???\n" +
+                        "/help -> Affiche la liste des commandes disponibles");
             }else{
-                message = new SendMessage( ).setChatId(chat_id).setText(message_text);
+                message = new SendMessage().setChatId(chat_id).setText(message_text);
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
