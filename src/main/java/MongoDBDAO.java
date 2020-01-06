@@ -40,7 +40,7 @@ public class MongoDBDAO {
         }
     }
 
-    public ObjectId addreceipe(String receipeName, String receipeDescription, String time, String kcal) {
+    public ObjectId addReceipe(String receipeName, String receipeDescription, String time, String kcal) {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");

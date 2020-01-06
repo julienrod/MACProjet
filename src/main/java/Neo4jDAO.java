@@ -20,7 +20,8 @@ public class Neo4jDAO implements AutoCloseable
         driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic( "bot", "SyugarDaddy4j"));
     }
 
-    public static Neo4jDAO getInstance(){
+    public static Neo4jDAO getInstance()
+    {
         if(instance == null){
             instance = new Neo4jDAO();
         }

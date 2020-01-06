@@ -258,7 +258,7 @@ public class Bot extends TelegramLongPollingBot {
         if (addRecipeData.get(id).size() > 6) {
             subcategories = addRecipeData.get(id).get(6);
         }
-        ObjectId recipeId = MongoDBDAO.getInstance().addreceipe(name, description, time, kcal);
+        ObjectId recipeId = MongoDBDAO.getInstance().addReceipe(name, description, time, kcal);
         Neo4jDAO.getInstance().addReceipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
     }
 }
