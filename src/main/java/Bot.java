@@ -26,46 +26,47 @@ public class Bot extends TelegramLongPollingBot {
     private HashMap<Long, List<List<String>>> addReceipeData = new HashMap<>();
 
     public void onUpdateReceived(Update update) {
-        long user_id = update.getMessage( ).getChat( ).getId( );
+        long user_id = update.getMessage().getChat().getId();
         if(update.hasMessage() && update.getMessage().hasText()) {
-            String user_first_name = update.getMessage( ).getChat( ).getFirstName( );
-            String user_last_name = update.getMessage( ).getChat( ).getLastName( );
-            String user_username = update.getMessage( ).getChat( ).getUserName( );
-            String message_text = update.getMessage( ).getText( );
-            MongoDBDAO.getInstance( ).check(user_first_name, user_last_name, toIntExact(user_id), user_username);
-            long chat_id = update.getMessage( ).getChatId( );
+            String user_first_name = update.getMessage().getChat().getFirstName();
+            String user_last_name = update.getMessage().getChat().getLastName();
+            String user_username = update.getMessage().getChat().getUserName();
+            String message_text = update.getMessage().getText();
+            MongoDBDAO.getInstance().check(user_first_name, user_last_name, toIntExact(user_id), user_username);
+            long chat_id = update.getMessage().getChatId();
             SendMessage message = null;
-            if(addReceipeStatus.containsKey(user_id)){
-                switch (addReceipeStatus.get(user_id)){
+
+            if(addReceipeStatus.containsKey(user_id)) {
+                switch (addReceipeStatus.get(user_id)) {
                     case 0:
                         newReceipeList(user_id, message_text);
-                        message = new SendMessage( ).setChatId(chat_id).setText("Veuillez spécifier les ustenciles (" +
-                                "séparés par une virgule)\n Exemple: mixer, micro-onde, spatule");
+                        message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ustenciles (" +
+                                "séparés par une virgule)\n Exemple: mixer, micro-ondes, spatule");
                         break;
                     case 1:
                         newReceipeList(user_id, message_text);
-                        message = new SendMessage( ).setChatId(chat_id).setText("Veuillez spécifier le temps de" +
+                        message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier le temps de" +
                                 " préparation\n Exemple: 1h 30m");
                         break;
                     case 2:
-                        if(!newReceipeRegex(user_id, message_text, "([0-9]+m|[0-9]+h|[0-9]+h [0-9]+m)")){
-                            message = new SendMessage( ).setChatId(chat_id).setText("Pattern de temps incorrecte");
+                        if(!newReceipeRegex(user_id, message_text, "([0-9]+m|[0-9]+h|[0-9]+h [0-9]+m)")) {
+                            message = new SendMessage().setChatId(chat_id).setText("Format incorrect\n Exemple: 1h 30m");
                         }else{
-                            message = new SendMessage( ).setChatId(chat_id).setText("Veuillez spécifier le nombre de" +
+                            message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier le nombre de" +
                                     " calories\n Exemple: 250kcal");
                         }
                         break;
                     case 3:
-                        if(!newReceipeRegex(user_id, message_text, "([0-9]+(kcal)?)")){
-                            message = new SendMessage( ).setChatId(chat_id).setText("Pattern de temps incorrecte");
+                        if(!newReceipeRegex(user_id, message_text, "([0-9]+(kcal)?)")) {
+                            message = new SendMessage().setChatId(chat_id).setText("Format incorrect\n Exemple: 250kcal");
                         }else{
-                            message = new SendMessage( ).setChatId(chat_id).setText("Veuillez dérire la recette");
+                            message = new SendMessage().setChatId(chat_id).setText("Veuillez décrire la recette");
                         }
                         break;
                     case 4:
                         newReceipeSinglePhrase(user_id, message_text);
-                        message = new SendMessage( ).setChatId(chat_id).setText("Vous pouvez aussi spécifier d'autres " +
-                                "tags\n Exemples : biscuit, gateau, pâtisserie japonaise, etc...");
+                        message = new SendMessage().setChatId(chat_id).setText("Vous pouvez aussi spécifier d'autres " +
+                                "tags\n Exemple: biscuit, gateau, pâtisserie japonaise, etc...");
                         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                         List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -117,10 +118,9 @@ public class Bot extends TelegramLongPollingBot {
                 }
             }else if (message_text.startsWith("/newreceipe ")) {
                 newReceipeSinglePhrase(user_id, message_text.substring(12));
-                message = new SendMessage( ).setChatId(chat_id).setText("Veuillez spécifier les ingrédients (" +
-                        "séparés par une virgule) et leurs quantités" +
-                        "(séparés les quantités des ingrédients avec un slash" +
-                        ")\n Exemple: sucre/250g, farine/150g, eau/2 tasse, confiture d'abricot/1 pot");
+                message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ingrédients avec " +
+                                "leur quantité (séparer les quantités des ingrédients avec '/')\n " +
+                                "Exemple: sucre/250g, farine/150g, eau/2 tasse, confiture d'abricot/1 pot");
             }else if (message_text.equals("/reset")) {
                 addReceipeData.remove(user_id);
                 addReceipeStatus.remove(user_id);
@@ -214,7 +214,7 @@ public class Bot extends TelegramLongPollingBot {
         List<List<String>> newReceipe = new ArrayList<>();
         List<String> name = new ArrayList<>();
         name.add(receipeName);
-        if(addReceipeStatus.get(id) != null){
+        if(addReceipeStatus.get(id) != null) {
             newReceipe = addReceipeData.get(id);
         }
         newReceipe.add(name);
@@ -223,7 +223,7 @@ public class Bot extends TelegramLongPollingBot {
 
     }
 
-    private void newReceipeList(long id, String list){
+    private void newReceipeList(long id, String list) {
         int state = addReceipeStatus.get(id);
         List<String> myList = Arrays.asList(list.replace("[^a-zA-Z/]+", "")
                 .toLowerCase().replace(" ", "").split(","));
@@ -233,7 +233,7 @@ public class Bot extends TelegramLongPollingBot {
         addReceipeStatus.put(id, ++state);
     }
 
-    private boolean newReceipeRegex(long id, String list, String regex){
+    private boolean newReceipeRegex(long id, String list, String regex) {
         int state = addReceipeStatus.get(id);
         Pattern pat = Pattern.compile(regex);
         Matcher match = pat.matcher(list);
@@ -246,8 +246,8 @@ public class Bot extends TelegramLongPollingBot {
         return true;
     }
 
-    private void addNewReceipe(long id){
-        //Nom de la recette, ingrédients, ustenciles, temps, kcal, description (, sous catégorie)
+    private void addNewReceipe(long id) {
+        //Nom de la recette, ingrédients, ustenciles, temps, kcal, description, sous-catégorie
         String name = addReceipeData.get(id).get(0).get(0);
         String description = addReceipeData.get(id).get(5).get(0);
         String time = addReceipeData.get(id).get(3).get(0);
@@ -255,7 +255,7 @@ public class Bot extends TelegramLongPollingBot {
         List<String> ingredients = addReceipeData.get(id).get(1);
         List<String> ustenciles = addReceipeData.get(id).get(2);
         List<String> subcategories = null;
-        if (addReceipeData.get(id).size() > 6){
+        if (addReceipeData.get(id).size() > 6) {
             subcategories = addReceipeData.get(id).get(6);
         }
         ObjectId receipeId = MongoDBDAO.getInstance().addreceipe(name, description, time, kcal);

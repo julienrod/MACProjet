@@ -11,8 +11,8 @@ import java.util.List;
 public class MongoDBDAO {
     private static MongoDBDAO instance;
     private MongoDBDAO(){}
-    public static MongoDBDAO getInstance(){
-        if(instance == null){
+    public static MongoDBDAO getInstance() {
+        if(instance == null) {
             instance = new MongoDBDAO();
         }
         return instance;
@@ -22,6 +22,7 @@ public class MongoDBDAO {
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
+
         long found = collection.count(Document.parse("{id : " + Integer.toString(user_id) + "}"));
         if (found == 0) {
             Document doc = new Document("first_name", first_name)
@@ -32,14 +33,14 @@ public class MongoDBDAO {
             mongoClient.close();
             List<String> collections = Arrays.asList("User");
             Neo4jDAO.getInstance().addNode("_" + user_id, collections);
-            System.out.println("User not exists in database. Written.");
+            System.out.println("User doesn't exist in database. Written.");
         } else {
-            System.out.println("User exists in database.");
+            System.out.println("User already exists in database.");
             mongoClient.close();
         }
     }
 
-    public ObjectId addreceipe(String receipeName, String receipeDescription, String time, String kcal){
+    public ObjectId addreceipe(String receipeName, String receipeDescription, String time, String kcal) {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");

@@ -54,14 +54,14 @@ public class Neo4jDAO implements AutoCloseable
     }
 
     public void addReceipe(long user_id, String receipe_id, List<String> ingredients, List<String> ustenciles,
-                           List<String> subCategories){
+                           List<String> subCategories) {
         List<String> collections = new LinkedList<>();
         collections.add("Receipe");
         for(String sub : subCategories){
             collections.add(sub);
         }
         addNode("_" + receipe_id, collections);
-        for(String ingredient : ingredients){
+        for(String ingredient : ingredients) {
             String[] ingredientXquantite = ingredient.split("/");
             addNode(ingredientXquantite[0], Arrays.asList("Ingredient"));
             runRequest("MATCH (ing: Ingredient{name: '" + ingredientXquantite[0] + "' })," +
@@ -70,7 +70,7 @@ public class Neo4jDAO implements AutoCloseable
                     ingredientXquantite[1] + "'}]->(rcp)");
         }
 
-        for(String ustencile : ustenciles){
+        for(String ustencile : ustenciles) {
             addNode(ustencile, Arrays.asList("Ustencile"));
             runRequest("MATCH (ust: Ustencile{name: '" + ustencile + "' })," +
                     "(rcp:Receipe{ name:'_" + receipe_id +"'})\n" +
