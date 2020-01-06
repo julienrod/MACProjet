@@ -3,9 +3,7 @@ import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.types.Node;
 
-import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,5 +77,16 @@ public class Neo4jDAO implements AutoCloseable
         runRequest("MATCH (usr: User{name: '_" + user_id + "' })," +
                 "(rcp:Receipe{ name:'_" + receipe_id +"'})\n" +
                 "CREATE (usr)-[:PROPOSED{date:datetime()}]->(rcp)");
+    }
+
+    public StatementResult getRecipeByIngredients(List<String> ingredients){
+        String requestBegin = "";
+        String requestEnd = "WHERE ";
+        for(String ingredient : ingredients){
+            requestBegin += "MATCH (" + ingredient + ":Ingredient)-[:IN]->(r:Receipe)\n";
+            requestEnd += " " + ingredient +  ".name = '" + ingredient + "' AND";
+        }
+        String request = requestBegin + requestEnd.substring(0, requestEnd.length() -3) + "\nRETURN r.name\n";
+        return runRequest(request);
     }
 }

@@ -1,6 +1,9 @@
 //Sources : https://monsterdeveloper.gitbooks.io/writing-telegram-bots-on-java/content/
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.StatementResult;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -126,8 +129,17 @@ public class Bot extends TelegramLongPollingBot {
                 addReceipeStatus.remove(user_id);
                 message = new SendMessage( ).setChatId(chat_id).setText("L'ajout de recette a été avorté");
             }else if (message_text.equals("/random")) {
-            }else if (message_text.startsWith("/receipesbyname ")) {
+            }else if (message_text.startsWith("/getRecipe ")) {
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("update_msg_text"));
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/receipesbyingredients ")) {
+                List<String> ingredients = Arrays.asList(message_text.substring(23).split(" "));
+                message = new SendMessage( ).setChatId(chat_id).setText(getReceipesByIngredient(ingredients));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -260,5 +272,23 @@ public class Bot extends TelegramLongPollingBot {
         }
         ObjectId receipeId = MongoDBDAO.getInstance().addreceipe(name, description, time, kcal);
         Neo4jDAO.getInstance().addReceipe(id, receipeId.toString(), ingredients, ustenciles, subcategories);
+    }
+
+    private String getReceipesByIngredient(List<String> ingredients){
+        String result = "";
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByIngredients(ingredients);
+        while ( str.hasNext() )
+        {
+            Record record = str.next();
+            String recipeId = record.get(0).asString().substring(1);
+            Document recipe = MongoDBDAO.getInstance().findDocument(recipeId);
+            result += recipeId + "\t\t" + recipe.get("name") + "\n";
+        }
+        if(result.equals("")){
+            result += "No result found";
+        }else{
+            result = "id \t\t nom\n" + result;
+        }
+        return result;
     }
 }

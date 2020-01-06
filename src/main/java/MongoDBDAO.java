@@ -1,3 +1,5 @@
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
@@ -7,6 +9,8 @@ import org.bson.types.ObjectId;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class MongoDBDAO {
     private static MongoDBDAO instance;
@@ -52,5 +56,13 @@ public class MongoDBDAO {
         ObjectId id = (ObjectId)doc.get( "_id" );
         mongoClient.close();
         return id;
+    }
+
+    public Document findDocument(String id){
+        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
+        MongoClient mongoClient = new MongoClient(connectionString);
+        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoCollection<Document> collection = database.getCollection("receipe");
+        return collection.find(eq("_id", new ObjectId(id))).first();
     }
 }
