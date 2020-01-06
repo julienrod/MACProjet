@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
 import static java.lang.StrictMath.toIntExact;
 
 public class Bot extends TelegramLongPollingBot {
-    private HashMap<Long, Integer> addReceipeStatus = new HashMap<>();
-    private HashMap<Long, List<List<String>>> addReceipeData = new HashMap<>();
+    private HashMap<Long, Integer> addRecipeStatus = new HashMap<>();
+    private HashMap<Long, List<List<String>>> addRecipeData = new HashMap<>();
 
     public void onUpdateReceived(Update update) {
         long user_id = update.getMessage().getChat().getId();
@@ -76,8 +76,8 @@ public class Bot extends TelegramLongPollingBot {
                         message.setReplyMarkup(markupInline);
                         break;
                     case 5:
-                        newReceipeList(user_id, message_text);
-                        addNewReceipe(user_id);
+                        newRecipeList(user_id, message_text);
+                        addNewRecipe(user_id);
                         message = new SendMessage( ).setChatId(chat_id).setText("La recette a été ajoutée");
                         break;
                 }
@@ -122,12 +122,12 @@ public class Bot extends TelegramLongPollingBot {
                                 "leur quantité (séparer les quantités des ingrédients avec '/')\n " +
                                 "Exemple: sucre/250g, farine/150g, eau/2 tasse, confiture d'abricot/1 pot");
             }else if (message_text.equals("/reset")) {
-                addReceipeData.remove(user_id);
-                addReceipeStatus.remove(user_id);
+                addRecipeData.remove(user_id);
+                addRecipeStatus.remove(user_id);
                 message = new SendMessage( ).setChatId(chat_id).setText("L'ajout de recette a été avorté");
             }else if (message_text.equals("/random")) {
-            }else if (message_text.startsWith("/receipesbyname ")) {
-            }else if (message_text.startsWith("/receipesbyingredients ")) {
+            }else if (message_text.startsWith("/recipesbyname ")) {
+            }else if (message_text.startsWith("/recepesbyingredients ")) {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -135,7 +135,7 @@ public class Bot extends TelegramLongPollingBot {
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/receipesbyuser ")) {
+            }else if (message_text.startsWith("/recipesbyuser ")) {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -143,8 +143,8 @@ public class Bot extends TelegramLongPollingBot {
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/receipesbycalory ")) {
-            }else if (message_text.startsWith("/receipesbymachine ")) {
+            }else if (message_text.startsWith("/recipesbycalory ")) {
+            }else if (message_text.startsWith("/recipesbymachine ")) {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -152,17 +152,17 @@ public class Bot extends TelegramLongPollingBot {
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/receipesbytime ")) {
-            }else if (message_text.startsWith("/showreceipe ")) {
+            }else if (message_text.startsWith("/recipesbytime ")) {
+            }else if (message_text.startsWith("/showrecipe ")) {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("update_msg_text"));
+                rowInline.add(new InlineKeyboardButton().setText("Like this recipe").setCallbackData("update_msg_text"));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.equals("/userscooking")) {
-            }else if (message_text.startsWith("/recommandations ")) {
+            }else if (message_text.startsWith("/recommendations ")) {
             }else if (message_text.equals("/help")) {
             }else{
                 message = new SendMessage( ).setChatId(chat_id).setText(message_text);
@@ -185,7 +185,7 @@ public class Bot extends TelegramLongPollingBot {
             long message_id = update.getCallbackQuery().getMessage().getMessageId();
             long chat_id = update.getCallbackQuery().getMessage().getChatId();
             if(call_data.equals("nothankyou")){
-                addNewReceipe(user_id);
+                addNewRecipe(user_id);
             }else if (call_data.equals("update_msg_text")) {
                 String answer = "Updated message text";
                 EditMessageText new_message = new EditMessageText()
@@ -209,17 +209,17 @@ public class Bot extends TelegramLongPollingBot {
         return "1057276327:AAHJLLnJ-4kCdQWe5hCnFtJB5V8ZGf7FTwY";
     }
 
-    private void newReceipeSinglePhrase(long id, String receipeName){
-        int state = addReceipeStatus.get(id) == null ? -1 : addReceipeStatus.get(id);
-        List<List<String>> newReceipe = new ArrayList<>();
+    private void newRecipeSinglePhrase(long id, String receipeName){
+        int state = addRecipeStatus.get(id) == null ? -1 : addRecipeStatus.get(id);
+        List<List<String>> newRecipe = new ArrayList<>();
         List<String> name = new ArrayList<>();
         name.add(receipeName);
         if(addReceipeStatus.get(id) != null) {
             newReceipe = addReceipeData.get(id);
         }
-        newReceipe.add(name);
-        addReceipeData.put(id, newReceipe);
-        addReceipeStatus.put(id, ++state);
+        newRecipe.add(name);
+        addRecipeData.put(id, newRecipe);
+        addRecipeStatus.put(id, ++state);
 
     }
 
@@ -227,10 +227,10 @@ public class Bot extends TelegramLongPollingBot {
         int state = addReceipeStatus.get(id);
         List<String> myList = Arrays.asList(list.replace("[^a-zA-Z/]+", "")
                 .toLowerCase().replace(" ", "").split(","));
-        List<List<String>> newReceipe = addReceipeData.get(id);
-        newReceipe.add(myList);
-        addReceipeData.put(id, newReceipe);
-        addReceipeStatus.put(id, ++state);
+        List<List<String>> newRecipe = addRecipeData.get(id);
+        newRecipe.add(myList);
+        addRecipeData.put(id, newRecipe);
+        addRecipeStatus.put(id, ++state);
     }
 
     private boolean newReceipeRegex(long id, String list, String regex) {
@@ -239,10 +239,10 @@ public class Bot extends TelegramLongPollingBot {
         Matcher match = pat.matcher(list);
         if(!match.find()) return false;
         List<String> myList = Arrays.asList(list.toLowerCase());
-        List<List<String>> newReceipe = addReceipeData.get(id);
-        newReceipe.add(myList);
-        addReceipeData.put(id, newReceipe);
-        addReceipeStatus.put(id, ++state);
+        List<List<String>> newRecipe = addRecipeData.get(id);
+        newRecipe.add(myList);
+        addRecipeData.put(id, newRecipe);
+        addRecipeStatus.put(id, ++state);
         return true;
     }
 
@@ -258,7 +258,7 @@ public class Bot extends TelegramLongPollingBot {
         if (addReceipeData.get(id).size() > 6) {
             subcategories = addReceipeData.get(id).get(6);
         }
-        ObjectId receipeId = MongoDBDAO.getInstance().addreceipe(name, description, time, kcal);
-        Neo4jDAO.getInstance().addReceipe(id, receipeId.toString(), ingredients, ustenciles, subcategories);
+        ObjectId recipeId = MongoDBDAO.getInstance().addreceipe(name, description, time, kcal);
+        Neo4jDAO.getInstance().addReceipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
     }
 }
