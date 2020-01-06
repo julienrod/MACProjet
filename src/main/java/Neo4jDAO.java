@@ -53,19 +53,19 @@ public class Neo4jDAO implements AutoCloseable
         }
     }
 
-    public void addReceipe(long user_id, String receipe_id, List<String> ingredients, List<String> ustenciles,
+    public void addRecipe(long userId, String recipeId, List<String> ingredients, List<String> ustenciles,
                            List<String> subCategories) {
         List<String> collections = new LinkedList<>();
-        collections.add("Receipe");
+        collections.add("Recipe");
         for(String sub : subCategories) {
             collections.add(sub);
         }
-        addNode("_" + receipe_id, collections);
+        addNode("_" + recipeId, collections);
         for(String ingredient : ingredients) {
             String[] ingredientXquantite = ingredient.split("/");
             addNode(ingredientXquantite[0], Arrays.asList("Ingredient"));
             runRequest("MATCH (ing: Ingredient{name: '" + ingredientXquantite[0] + "' })," +
-                    "(rcp:Receipe{ name:'_" + receipe_id +"'})\n" +
+                    "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
                     "CREATE (ing)-[:IN{quantite:'"+
                     ingredientXquantite[1] + "'}]->(rcp)");
         }
@@ -73,11 +73,11 @@ public class Neo4jDAO implements AutoCloseable
         for(String ustencile : ustenciles) {
             addNode(ustencile, Arrays.asList("Ustencile"));
             runRequest("MATCH (ust: Ustencile{name: '" + ustencile + "' })," +
-                    "(rcp:Receipe{ name:'_" + receipe_id +"'})\n" +
+                    "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
                     "CREATE (ust)-[:USEFULL]->(rcp)");
         }
-        runRequest("MATCH (usr: User{name: '_" + user_id + "' })," +
-                "(rcp:Receipe{ name:'_" + receipe_id +"'})\n" +
+        runRequest("MATCH (usr: User{name: '_" + userId + "' })," +
+                "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
                 "CREATE (usr)-[:PROPOSED{date:datetime()}]->(rcp)");
     }
 }

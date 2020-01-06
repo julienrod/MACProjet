@@ -26,30 +26,30 @@ public class Bot extends TelegramLongPollingBot {
     private HashMap<Long, List<List<String>>> addRecipeData = new HashMap<>();
 
     public void onUpdateReceived(Update update) {
-        long user_id = update.getMessage().getChat().getId();
+        long userId = update.getMessage().getChat().getId();
         if(update.hasMessage() && update.getMessage().hasText()) {
-            String user_first_name = update.getMessage().getChat().getFirstName();
-            String user_last_name = update.getMessage().getChat().getLastName();
-            String user_username = update.getMessage().getChat().getUserName();
+            String userFirstNname = update.getMessage().getChat().getFirstName();
+            String userLastName = update.getMessage().getChat().getLastName();
+            String userUsername = update.getMessage().getChat().getUserName();
             String message_text = update.getMessage().getText();
-            MongoDBDAO.getInstance().check(user_first_name, user_last_name, toIntExact(user_id), user_username);
+            MongoDBDAO.getInstance().check(userFirstNname, userLastName, toIntExact(userId), userUsername);
             long chat_id = update.getMessage().getChatId();
             SendMessage message = null;
 
-            if(addRecipeStatus.containsKey(user_id)) {
-                switch (addRecipeStatus.get(user_id)) {
+            if(addRecipeStatus.containsKey(userId)) {
+                switch (addRecipeStatus.get(userId)) {
                     case 0:
-                        newRecipeList(user_id, message_text);
+                        newRecipeList(userId, message_text);
                         message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ustenciles (" +
                                 "séparés par une virgule)\n Exemple: mixer, micro-ondes, spatule");
                         break;
                     case 1:
-                        newRecipeList(user_id, message_text);
+                        newRecipeList(userId, message_text);
                         message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier le temps de" +
                                 " préparation\n Exemple: 1h 30m");
                         break;
                     case 2:
-                        if(!newRecipeRegex(user_id, message_text, "([0-9]+m|[0-9]+h|[0-9]+h [0-9]+m)")) {
+                        if(!newRecipeRegex(userId, message_text, "([0-9]+m|[0-9]+h|[0-9]+h [0-9]+m)")) {
                             message = new SendMessage().setChatId(chat_id).setText("Format incorrect\n Exemple: 1h 30m");
                         }else{
                             message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier le nombre de" +
@@ -57,14 +57,14 @@ public class Bot extends TelegramLongPollingBot {
                         }
                         break;
                     case 3:
-                        if(!newRecipeRegex(user_id, message_text, "([0-9]+(kcal)?)")) {
+                        if(!newRecipeRegex(userId, message_text, "([0-9]+(kcal)?)")) {
                             message = new SendMessage().setChatId(chat_id).setText("Format incorrect\n Exemple: 250kcal");
                         }else{
                             message = new SendMessage().setChatId(chat_id).setText("Veuillez décrire la recette");
                         }
                         break;
                     case 4:
-                        newRecipeSinglePhrase(user_id, message_text);
+                        newRecipeSinglePhrase(userId, message_text);
                         message = new SendMessage().setChatId(chat_id).setText("Vous pouvez aussi spécifier d'autres " +
                                 "tags\n Exemple: biscuit, gateau, pâtisserie japonaise, etc...");
                         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
@@ -76,8 +76,8 @@ public class Bot extends TelegramLongPollingBot {
                         message.setReplyMarkup(markupInline);
                         break;
                     case 5:
-                        newRecipeList(user_id, message_text);
-                        addNewRecipe(user_id);
+                        newRecipeList(userId, message_text);
+                        addNewRecipe(userId);
                         message = new SendMessage( ).setChatId(chat_id).setText("La recette a été ajoutée");
                         break;
                 }
@@ -116,14 +116,14 @@ public class Bot extends TelegramLongPollingBot {
                 }catch(Exception e){
                     e.printStackTrace();
                 }
-            }else if (message_text.startsWith("/newreceipe ")) {
-                newRecipeSinglePhrase(user_id, message_text.substring(12));
+            }else if (message_text.startsWith("/newrecipe ")) {
+                newRecipeSinglePhrase(userId, message_text.substring(12));
                 message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ingrédients avec " +
                                 "leur quantité (séparer les quantités des ingrédients avec '/')\n " +
                                 "Exemple: sucre/250g, farine/150g, eau/2 tasse, confiture d'abricot/1 pot");
             }else if (message_text.equals("/reset")) {
-                addRecipeData.remove(user_id);
-                addRecipeStatus.remove(user_id);
+                addRecipeData.remove(userId);
+                addRecipeStatus.remove(userId);
                 message = new SendMessage( ).setChatId(chat_id).setText("L'ajout de recette a été avorté");
             }else if (message_text.equals("/random")) {
             }else if (message_text.startsWith("/recipesbyname ")) {
@@ -185,7 +185,7 @@ public class Bot extends TelegramLongPollingBot {
             long message_id = update.getCallbackQuery().getMessage().getMessageId();
             long chat_id = update.getCallbackQuery().getMessage().getChatId();
             if(call_data.equals("nothankyou")){
-                addNewRecipe(user_id);
+                addNewRecipe(userId);
             }else if (call_data.equals("update_msg_text")) {
                 String answer = "Updated message text";
                 EditMessageText new_message = new EditMessageText()
@@ -258,7 +258,7 @@ public class Bot extends TelegramLongPollingBot {
         if (addRecipeData.get(id).size() > 6) {
             subcategories = addRecipeData.get(id).get(6);
         }
-        ObjectId recipeId = MongoDBDAO.getInstance().addReceipe(name, description, time, kcal);
-        Neo4jDAO.getInstance().addReceipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
+        ObjectId recipeId = MongoDBDAO.getInstance().addRecipe(name, description, time, kcal);
+        Neo4jDAO.getInstance().addRecipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
     }
 }
