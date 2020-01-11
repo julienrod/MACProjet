@@ -63,7 +63,7 @@ public class MongoDBDAO {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
-        MongoCollection<Document> collection = database.getCollection("receipe");
+        MongoCollection<Document> collection = database.getCollection("recipe");
         return collection.find(eq("_id", new ObjectId(id))).first();
     }
 }

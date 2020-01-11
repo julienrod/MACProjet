@@ -74,19 +74,36 @@ public class Neo4jDAO implements AutoCloseable
                     "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
                     "CREATE (ust)-[:USEFULL]->(rcp)");
         }
+        addNode("_" + userId, Arrays.asList("User"));
         runRequest("MATCH (usr: User{name: '_" + userId + "' })," +
                 "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
                 "CREATE (usr)-[:PROPOSED{date:datetime()}]->(rcp)");
+    }
+
+    public void addLike(List<String> liked){
+        String user = "_" + liked.get(0);
+        addNode(user, Arrays.asList("User"));
+        for(int i = 1; i < liked.size(); ++i){
+            runRequest("MATCH (usr: User{name: '" + user + "' })," +
+                    "(like{ name:'" + liked.get(i) + "'})\n" +
+                    "CREATE (usr)-[:LIKE{date:datetime()}]->(like)");
+        }
+
     }
 
     public StatementResult getRecipeByIngredients(List<String> ingredients){
         String requestBegin = "";
         String requestEnd = "WHERE ";
         for(String ingredient : ingredients){
-            requestBegin += "MATCH (" + ingredient + ":Ingredient)-[:IN]->(r:Receipe)\n";
+            requestBegin += "MATCH (" + ingredient + ":Ingredient)-[:IN]->(r:Recipe)\n";
             requestEnd += " " + ingredient +  ".name = '" + ingredient + "' AND";
         }
         String request = requestBegin + requestEnd.substring(0, requestEnd.length() -3) + "\nRETURN r.name\n";
         return runRequest(request);
+    }
+
+    public StatementResult getRecipeParts(String recipeId, String relation, String autreparam){
+        return runRequest("MATCH (zeug)-[rel:" + relation + "]->(r:Recipe) WHERE r.name = '_" + recipeId +
+                "' RETURN zeug.name" + autreparam);
     }
 }

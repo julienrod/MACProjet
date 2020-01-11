@@ -6,19 +6,12 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,8 +22,8 @@ public class Bot extends TelegramLongPollingBot {
     private HashMap<Long, List<List<String>>> addRecipeData = new HashMap<>();
 
     public void onUpdateReceived(Update update) {
-        long userId = update.getMessage().getChat().getId();
         if(update.hasMessage() && update.getMessage().hasText()) {
+            long userId = update.getMessage().getChat().getId();
             String userFirstNname = update.getMessage().getChat().getFirstName();
             String userLastName = update.getMessage().getChat().getLastName();
             String userUsername = update.getMessage().getChat().getUserName();
@@ -39,7 +32,11 @@ public class Bot extends TelegramLongPollingBot {
             long chat_id = update.getMessage().getChatId();
             SendMessage message = null;
 
-            if(addRecipeStatus.containsKey(userId)) {
+            if (message_text.equals("/reset")) {
+                addRecipeData.remove(userId);
+                addRecipeStatus.remove(userId);
+                message = new SendMessage( ).setChatId(chat_id).setText("L'ajout de recette a été avorté");
+            }else if(addRecipeStatus.containsKey(userId)) {
                 switch (addRecipeStatus.get(userId)) {
                     case 0:
                         newRecipeList(userId, message_text);
@@ -73,7 +70,7 @@ public class Bot extends TelegramLongPollingBot {
                         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                         List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                        rowInline.add(new InlineKeyboardButton().setText("Non merci").setCallbackData("nothankyou"));
+                        rowInline.add(new InlineKeyboardButton().setText("Non merci").setCallbackData("nothankyou " + userId));
                         rowsInline.add(rowInline);
                         markupInline.setKeyboard(rowsInline);
                         message.setReplyMarkup(markupInline);
@@ -84,52 +81,15 @@ public class Bot extends TelegramLongPollingBot {
                         message = new SendMessage( ).setChatId(chat_id).setText("La recette a été ajoutée");
                         break;
                 }
-
-            }else if(message_text.equals("/markup")){
-                message = new SendMessage( ).setChatId(chat_id).setText("Here is your keyboard");
-                ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-                List<KeyboardRow> keyboard = new ArrayList<>();
-                KeyboardRow row = new KeyboardRow();
-                row.add("Row 1 Button 1");
-                row.add("Row 1 Button 2");
-                row.add("Row 1 Button 3");
-                keyboard.add(row);
-                row = new KeyboardRow();
-                row.add("Row 2 Button 1");
-                row.add("Row 2 Button 2");
-                row.add("Row 2 Button 3");
-                keyboard.add(row);
-                keyboardMarkup.setKeyboard(keyboard);
-                message.setReplyMarkup(keyboardMarkup);
-            }else if (message_text.equals("/hide")) {
-                message = new SendMessage()
-                        .setChatId(chat_id)
-                        .setText("Keyboard hidden");
-                ReplyKeyboardRemove keyboardMarkup = new ReplyKeyboardRemove();
-                message.setReplyMarkup(keyboardMarkup);
-                try {
-                    execute(message); // Call method to send the photo
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-            }else if (message_text.equals("/neo4j")) {
-                try ( Neo4jDAO greeter = Neo4jDAO.getInstance() )
-                {
-                    //greeter.addMember( "hello, world" );
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
             }else if (message_text.startsWith("/newrecipe ")) {
-                newRecipeSinglePhrase(userId, message_text.substring(12));
+                newRecipeSinglePhrase(userId, message_text.substring(11));
                 message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ingrédients avec " +
                                 "leur quantité (séparer les quantités des ingrédients avec '/')\n " +
                                 "Exemple: sucre/250g, farine/150g, eau/2 tasse, confiture d'abricot/1 pot");
-            }else if (message_text.equals("/reset")) {
-                addRecipeData.remove(userId);
-                addRecipeStatus.remove(userId);
-                message = new SendMessage().setChatId(chat_id).setText("L'ajout de recette a été avorté");
             }else if (message_text.equals("/random")) {
-            }else if (message_text.startsWith("/getRecipe ")) {
+            }else if (message_text.startsWith("/getrecipe ")) {
+                message = new SendMessage( ).setChatId(chat_id).setText(
+                        getReceipeById(message_text.substring(11)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -138,12 +98,14 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbyingredients ")) {
-                List<String> ingredients = Arrays.asList(message_text.substring(23).split(" "));
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipesByIngredient(ingredients));
+                List<String> ingredients = Arrays.asList(message_text.substring(22).replaceAll(" ", "").split(","));
+                message = new SendMessage( ).setChatId(chat_id).setText("With " + message_text.substring(22) + "\n" +
+                        getReceipesByIngredients(ingredients));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like these ingredients").setCallbackData("update_msg_text"));
+                rowInline.add(new InlineKeyboardButton().setText("Like these ingredients").setCallbackData(
+                        "Like " + userId  + " " + message_text.substring(22)));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
@@ -160,7 +122,7 @@ public class Bot extends TelegramLongPollingBot {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like these machines").setCallbackData("update_msg_text"));
+                rowInline.add(new InlineKeyboardButton().setText("Like this machine").setCallbackData("update_msg_text"));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
@@ -177,9 +139,6 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.startsWith("/recommendations")) {
             }else if (message_text.equals("/help")) {
                 message = new SendMessage().setChatId(chat_id).setText(
-                        "/markup -> ???\n" +
-                        "/hide -> ???\n" +
-                        "/neo4j -> ???\n" +
                         "/newrecipe [nom] -> ???\n" +
                         "/reset -> ???\n" +
                         "/random -> ???\n" +
@@ -209,23 +168,22 @@ public class Bot extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         }else if (update.hasCallbackQuery()) {
-            //A utiliser pour rajouter des like
+            //A utiliser pour rajouter des like et nothankyou
             String call_data = update.getCallbackQuery().getData();
             long message_id = update.getCallbackQuery().getMessage().getMessageId();
             long chat_id = update.getCallbackQuery().getMessage().getChatId();
-            if(call_data.equals("nothankyou")){
-                addNewRecipe(userId);
-            }else if (call_data.equals("update_msg_text")) {
-                String answer = "Updated message text";
-                EditMessageText new_message = new EditMessageText()
-                        .setChatId(chat_id)
-                        .setMessageId((int)message_id)
-                        .setText(answer);
+            if(call_data.startsWith("nothankyou ")){
+                String userId = call_data.substring(11);
+                addNewRecipe(Long.parseLong(userId));
+                SendMessage message = new SendMessage( ).setChatId(chat_id).setText("La recette a été ajoutée");
                 try {
-                    execute(new_message);
+                    execute(message);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
+            }else if (call_data.startsWith("Like ")) {
+               List<String> liked = Arrays.asList(call_data.substring(5).split(" "));
+               Neo4jDAO.getInstance().addLike(liked);
             }
         }
     }
@@ -286,12 +244,14 @@ public class Bot extends TelegramLongPollingBot {
         List<String> subcategories = null;
         if (addRecipeData.get(id).size() > 6) {
             subcategories = addRecipeData.get(id).get(6);
+        }else{
+            subcategories = new LinkedList<>();
         }
         ObjectId recipeId = MongoDBDAO.getInstance().addRecipe(name, description, time, kcal);
         Neo4jDAO.getInstance().addRecipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
     }
 
-    private String getReceipesByIngredient(List<String> ingredients){
+    private String getReceipesByIngredients(List<String> ingredients){
         String result = "";
         StatementResult str = Neo4jDAO.getInstance().getRecipeByIngredients(ingredients);
         while ( str.hasNext() )
@@ -304,8 +264,16 @@ public class Bot extends TelegramLongPollingBot {
         if(result.equals("")){
             result += "No result found";
         }else{
-            result = "id \t\t nom\n" + result;
+            result = "id \t\t\t\t\t\t\t\t\t nom\n" + result;
         }
         return result;
+    }
+
+    private String getReceipeById(String recipeId){
+        String recipe = "";
+        Document documentation = MongoDBDAO.getInstance().findDocument(recipeId);
+        StatementResult ingredients = Neo4jDAO.getInstance().getRecipeParts(recipeId, "IN", ",rel.quantite");
+        StatementResult machines = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
+        return recipe;
     }
 }
