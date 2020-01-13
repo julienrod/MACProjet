@@ -40,7 +40,7 @@ public class Bot extends TelegramLongPollingBot {
                 switch (addRecipeStatus.get(userId)) {
                     case 0:
                         newRecipeList(userId, message_text);
-                        message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ustenciles (" +
+                        message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ustensiles (" +
                                 "séparés par une virgule)\n Exemple: mixer, micro-ondes, spatule");
                         break;
                     case 1:
@@ -93,7 +93,7 @@ public class Bot extends TelegramLongPollingBot {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("Like "
+                rowInline.add(new InlineKeyboardButton().setText("Like this recipe").setCallbackData("Like "
                         + userId  + " _"  + id));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
@@ -104,7 +104,7 @@ public class Bot extends TelegramLongPollingBot {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("Like "
+                rowInline.add(new InlineKeyboardButton().setText("Like this recipe").setCallbackData("Like "
                         + userId  + " _"  + message_text.substring(11)));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
@@ -147,11 +147,7 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbytime ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getRecipesByTime(message_text.substring(15)));
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                markupInline.setKeyboard(rowsInline);
-                message.setReplyMarkup(markupInline);
+                message = new SendMessage().setChatId(chat_id).setText(getRecipesByTime(message_text.substring(15)));
             }else if (message_text.equals("/userscooking")) { //TODO
             }else if (message_text.startsWith("/recommendations")) { //TODO
             }else if (message_text.equals("/help")) {
