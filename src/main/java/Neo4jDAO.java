@@ -118,11 +118,6 @@ public class Neo4jDAO implements AutoCloseable
         return null;
     }
 
-    StatementResult getRecipesByTime(String time) {
-        //TODO
-        return null;
-    }
-
     StatementResult getRecipeParts(String recipeId, String relation, String other) {
         return runRequest("MATCH (zeug)-[rel:" + relation + "]->(r:Recipe) WHERE r.name = '_" + recipeId +
                 "' RETURN zeug.name" + other);
