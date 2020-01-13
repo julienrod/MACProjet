@@ -91,7 +91,7 @@ public class Neo4jDAO implements AutoCloseable
 
     }
 
-    public StatementResult getRecipeByIngredients(List<String> ingredients){
+    public StatementResult getRecipesByIngredients(List<String> ingredients){
         String requestBegin = "";
         String requestEnd = "WHERE ";
         for(String ingredient : ingredients){
@@ -100,6 +100,25 @@ public class Neo4jDAO implements AutoCloseable
         }
         String request = requestBegin + requestEnd.substring(0, requestEnd.length() -3) + "\nRETURN r.name\n";
         return runRequest(request);
+    }
+
+    public StatementResult getRecipesByTools(List<String> tools){
+        String requestBegin = "";
+        String requestEnd = "WHERE ";
+        for(String tool : tools){
+            requestBegin += "MATCH (" + tool + ":Ustencile)-[:IN]->(r:Recipe)\n";
+            requestEnd += " " + tool +  ".name = '" + tool + "' AND";
+        }
+        String request = requestBegin + requestEnd.substring(0, requestEnd.length() -3) + "\nRETURN r.name\n";
+        return runRequest(request);
+    }
+
+    public StatementResult getRecipesByCalories(String calories){
+        /*
+        String request = "MATCH (" + calories + ":Calories)-[:IN]->(r:Recipe) WHERE r.calories <= " + calories + "RETURN r.name\n";
+        return runRequest(request);
+        */
+        return null;
     }
 
     public StatementResult getRecipeParts(String recipeId, String relation, String autreparam){
