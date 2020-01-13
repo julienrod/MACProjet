@@ -125,4 +125,14 @@ public class Neo4jDAO implements AutoCloseable
         return runRequest("MATCH (zeug)-[rel:" + relation + "]->(r:Recipe) WHERE r.name = '_" + recipeId +
                 "' RETURN zeug.name" + autreparam);
     }
+
+    public StatementResult getRecipesByUser(String user) {
+        //TODO
+        return null;
+    }
+
+    public StatementResult getRecipesByTime(String time) {
+        //TODO
+        return null;
+    }
 }
