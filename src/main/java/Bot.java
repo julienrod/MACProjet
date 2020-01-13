@@ -89,7 +89,7 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.equals("/random")) {
                 Document random = MongoDBDAO.getInstance().getRandomRecipe();
                 String id = random.get("_id").toString();
-                message = new SendMessage().setChatId(chat_id).setText(getReceipeById(id));
+                message = new SendMessage().setChatId(chat_id).setText(getRecipeById(id));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
