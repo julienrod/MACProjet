@@ -60,7 +60,7 @@ class MongoDBDAO {
         return id;
     }
 
-    Document findDocument(String id){
+    Document findDocument(String id) {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
@@ -68,7 +68,7 @@ class MongoDBDAO {
         return collection.find(eq("_id", new ObjectId(id))).first();
     }
 
-    Document getRandomRecipe(){
+    Document getRandomRecipe() {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");

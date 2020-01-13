@@ -31,7 +31,7 @@ public class Neo4jDAO implements AutoCloseable
 
     void addNode(String id, List<String> collections) {
         StringBuilder args = new StringBuilder(id);
-        for(String c : collections) {
+        for (String c : collections) {
             args.append(":").append(c);
         }
         runRequest("MERGE (" + args + "{name:'" + id + "'})");
@@ -49,7 +49,7 @@ public class Neo4jDAO implements AutoCloseable
         collections.add("Recipe");
         collections.addAll(subCategories);
         addNode("_" + recipeId, collections);
-        for(String ingredient : ingredients) {
+        for (String ingredient : ingredients) {
             String[] ingredientXquantite = ingredient.split("/");
             addNode(ingredientXquantite[0], Collections.singletonList("Ingredient"));
             runRequest("MATCH (ing: Ingredient{name: '" + ingredientXquantite[0] + "' })," +
@@ -58,7 +58,7 @@ public class Neo4jDAO implements AutoCloseable
                     ingredientXquantite[1] + "'}]->(rcp)");
         }
 
-        for(String tool : tools) {
+        for (String tool : tools) {
             addNode(tool, Collections.singletonList("Ustencile"));
             runRequest("MATCH (ust: Ustencile{name: '" + tool + "' })," +
                     "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
@@ -73,7 +73,7 @@ public class Neo4jDAO implements AutoCloseable
     void addLike(List<String> liked) {
         String user = "_" + liked.get(0);
         addNode(user, Collections.singletonList("User"));
-        for(int i = 1; i < liked.size(); ++i) {
+        for (int i = 1; i < liked.size(); ++i) {
             runRequest("MATCH (usr: User{name: '" + user + "' })," +
                     "(like{ name:'" + liked.get(i) + "'})\n" +
                     "CREATE (usr)-[:LIKE{date:datetime()}]->(like)");
@@ -83,7 +83,7 @@ public class Neo4jDAO implements AutoCloseable
     StatementResult getRecipesByIngredients(List<String> ingredients) {
         StringBuilder requestBegin = new StringBuilder();
         StringBuilder requestEnd = new StringBuilder("WHERE ");
-        for(String ingredient : ingredients) {
+        for (String ingredient : ingredients) {
             requestBegin.append("MATCH (").append(ingredient).append(":Ingredient)-[:IN]->(r:Recipe)\n");
             requestEnd.append(" ").append(ingredient).append(".name = '").append(ingredient).append("' AND");
         }
@@ -94,7 +94,7 @@ public class Neo4jDAO implements AutoCloseable
     StatementResult getRecipesByTools(List<String> tools) {
         StringBuilder requestBegin = new StringBuilder();
         StringBuilder requestEnd = new StringBuilder("WHERE ");
-        for(String tool : tools) {
+        for (String tool : tools) {
             requestBegin.append("MATCH (").append(tool).append(":Ustencile)-[:IN]->(r:Recipe)\n");
             requestEnd.append(" ").append(tool).append(".name = '").append(tool).append("' AND");
         }
