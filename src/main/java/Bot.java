@@ -93,7 +93,8 @@ public class Bot extends TelegramLongPollingBot {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("update_msg_text"));
+                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("Like "
+                        + userId  + " _"  + message_text.substring(11)));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
@@ -270,10 +271,29 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String getReceipeById(String recipeId){
-        String recipe = "";
         Document documentation = MongoDBDAO.getInstance().findDocument(recipeId);
         StatementResult ingredients = Neo4jDAO.getInstance().getRecipeParts(recipeId, "IN", ",rel.quantite");
         StatementResult machines = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
+        StatementResult user = Neo4jDAO.getInstance().getRecipeParts(recipeId, "PROPOSED", ",rel.date");
+        String recipe = documentation.get("name").toString() + "\nIngrédients : \n";
+        while ( ingredients.hasNext() )
+        {
+            Record record = ingredients.next();
+            recipe += " - " + record.get(0).asString() + " " + record.get(1).asString() + "\n";
+        }
+        recipe += "\nMachines utilisées : \n";
+        while ( machines.hasNext() )
+        {
+            Record record = machines.next();
+            recipe += " - " +  record.get(0).asString() + "\n";
+        }
+        recipe += "Temps de préparation : " +  documentation.get("time").toString() + "\n" + "Calories : " + documentation.get("kcal").toString() + "\n";
+        recipe += "Marche à suivre\n" + documentation.get("description") + "\n\n";
+        while ( user.hasNext() )
+        {
+            Record record = user.next();
+            recipe += "Proposée par n°" + record.get(0).asString() + " le " + record.get(1) + "\n";
+        }
         return recipe;
     }
 }
