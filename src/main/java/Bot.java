@@ -111,7 +111,7 @@ public class Bot extends TelegramLongPollingBot {
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbyingredients ")) {
                 List<String> ingredients = Arrays.asList(message_text.substring(22).replaceAll(" ", "").split(","));
-                message = new SendMessage( ).setChatId(chat_id).setText("With " + message_text.substring(22) + "\n" +
+                message = new SendMessage().setChatId(chat_id).setText("With " + message_text.substring(22) + "\n" +
                         getRecipesByIngredients(ingredients));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
@@ -122,7 +122,7 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbyuser ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByUser(message_text.substring(15)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipesByUser(message_text.substring(15)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -130,23 +130,24 @@ public class Bot extends TelegramLongPollingBot {
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/recipesbycalory ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByCalories(message_text.substring(17)));
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                markupInline.setKeyboard(rowsInline);
-                message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/recipesbymachine ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByMachine(message_text.substring(18)));
+            }else if (message_text.startsWith("/recipesbycalories ")) {
+                String calories = message_text.substring(17).replaceAll(" ", "");
+                message = new SendMessage().setChatId(chat_id).setText("With " + message_text.substring(17) + "\n" +
+                        getRecipesByCalories(calories));
+            }else if (message_text.startsWith("/recipesbytools ")) {
+                List<String> tools = Arrays.asList(message_text.substring(18).replaceAll(" ", "").split(","));
+                message = new SendMessage().setChatId(chat_id).setText("With " + message_text.substring(18) + "\n" +
+                        getRecipesByTools(tools));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this machine").setCallbackData("update_msg_text"));
+                rowInline.add(new InlineKeyboardButton().setText("Like these tools").setCallbackData(
+                        "Like " + userId  + " " + message_text.substring(18)));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbytime ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByTime(message_text.substring(15)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipesByTime(message_text.substring(15)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 markupInline.setKeyboard(rowsInline);
@@ -161,8 +162,8 @@ public class Bot extends TelegramLongPollingBot {
                     "/getrecipe [id] -> Affiche les recettes ayant pour id [id]\n" +
                     "/recipesbyingredients [i1, i2, ...] -> Affiche les recettes ayant pour ingrédients [i1, i2, ...]\n" +
                     "/recipesbyuser [utilisateur] -> Affiche les recettes de l'utilisateur [utilisateur]\n" +
-                    "/recipesbycalory [calories] -> Affiche les recettes ayant moins de [calories] calories\n" +
-                    "/recipesbymachine [m1, m2, ...] -> Affiche les recettes ayant pour ustensiles [m1, m2, ...]\n" +
+                    "/recipesbycalories [calories] -> Affiche les recettes ayant moins de [calories] calories\n" +
+                    "/recipesbytools [t1, t2, ...] -> Affiche les recettes ayant pour ustensiles [t1, t2, ...]\n" +
                     "/recipesbytime [temps] -> Affiche les recettes prenant [temps] à réaliser à 5 minutes près\n" +
                     "/userscooking -> Affiche les utilisateurs en train de cuisiner\n" +
                     "/recommendations -> Propose des recettes sur la base de celles consultées jusqu'à présent\n" +
@@ -271,23 +272,23 @@ public class Bot extends TelegramLongPollingBot {
     private String getRecipeById(String recipeId){
         Document documentation = MongoDBDAO.getInstance().findDocument(recipeId);
         StatementResult ingredients = Neo4jDAO.getInstance().getRecipeParts(recipeId, "IN", ",rel.quantite");
-        StatementResult machines = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
+        StatementResult tools = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
         StatementResult user = Neo4jDAO.getInstance().getRecipeParts(recipeId, "PROPOSED", ",rel.date");
         String recipe = documentation.get("name").toString() + "\nIngrédients : \n";
-        while ( ingredients.hasNext() )
+        while (ingredients.hasNext())
         {
             Record record = ingredients.next();
             recipe += " - " + record.get(0).asString() + " " + record.get(1).asString() + "\n";
         }
-        recipe += "\nMachines utilisées : \n";
-        while ( machines.hasNext() )
+        recipe += "\nUstensiles utilisés : \n";
+        while (tools.hasNext())
         {
-            Record record = machines.next();
+            Record record = tools.next();
             recipe += " - " +  record.get(0).asString() + "\n";
         }
         recipe += "Temps de préparation : " +  documentation.get("time").toString() + "\n" + "Calories : " + documentation.get("kcal").toString() + "\n";
         recipe += "Marche à suivre\n" + documentation.get("description") + "\n\n";
-        while ( user.hasNext() )
+        while (user.hasNext())
         {
             Record record = user.next();
             recipe += "Proposée par n°" + record.get(0).asString() + " le " + record.get(1) + "\n";
@@ -295,38 +296,38 @@ public class Bot extends TelegramLongPollingBot {
         return recipe;
     }
 
-    private String getRecipeByUser(String user) {
+    private String getRecipesByUser(String user) {
         StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipeByUser(user);
+        StatementResult str = Neo4jDAO.getInstance().getRecipesByUser(user);
         return getRecipes(result, str);
     }
 
     private String getRecipesByIngredients(List<String> ingredients){
         StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipeByIngredients(ingredients);
+        StatementResult str = Neo4jDAO.getInstance().getRecipesByIngredients(ingredients);
         return getRecipes(result, str);
     }
 
-    private String getRecipeByMachine(String machine) {
+    private String getRecipesByTools(List<String> tools){
         StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipeByMachine(machine);
+        StatementResult str = Neo4jDAO.getInstance().getRecipesByTools(tools);
         return getRecipes(result, str);
     }
 
-    private String getRecipeByCalories(String calories) {
+    private String getRecipesByCalories(String calories) {
         StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipeByCalories(calories);
+        StatementResult str = Neo4jDAO.getInstance().getRecipesByCalories(calories);
         return getRecipes(result, str);
     }
 
-    private String getRecipeByTime(String time) {
+    private String getRecipesByTime(String time) {
         StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipeByTime(time);
+        StatementResult str = Neo4jDAO.getInstance().getRecipesByTime(time);
         return getRecipes(result, str);
     }
 
     private String getRecipes(StringBuilder result, StatementResult str) {
-        while ( str.hasNext() )
+        while (str.hasNext())
         {
             Record record = str.next();
             String recipeId = record.get(0).asString().substring(1);

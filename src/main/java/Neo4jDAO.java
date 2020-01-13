@@ -91,7 +91,7 @@ public class Neo4jDAO implements AutoCloseable
 
     }
 
-    public StatementResult getRecipeByIngredients(List<String> ingredients){
+    public StatementResult getRecipesByIngredients(List<String> ingredients){
         String requestBegin = "";
         String requestEnd = "WHERE ";
         for(String ingredient : ingredients){
@@ -102,27 +102,36 @@ public class Neo4jDAO implements AutoCloseable
         return runRequest(request);
     }
 
+    public StatementResult getRecipesByTools(List<String> tools){
+        String requestBegin = "";
+        String requestEnd = "WHERE ";
+        for(String tool : tools){
+            requestBegin += "MATCH (" + tool + ":Ustencile)-[:IN]->(r:Recipe)\n";
+            requestEnd += " " + tool +  ".name = '" + tool + "' AND";
+        }
+        String request = requestBegin + requestEnd.substring(0, requestEnd.length() -3) + "\nRETURN r.name\n";
+        return runRequest(request);
+    }
+
+    public StatementResult getRecipesByCalories(String calories){
+        /*
+        String request = "MATCH (" + calories + ":Calories)-[:IN]->(r:Recipe) WHERE r.calories <= " + calories + "RETURN r.name\n";
+        return runRequest(request);
+        */
+        return null;
+    }
+
     public StatementResult getRecipeParts(String recipeId, String relation, String autreparam){
         return runRequest("MATCH (zeug)-[rel:" + relation + "]->(r:Recipe) WHERE r.name = '_" + recipeId +
                 "' RETURN zeug.name" + autreparam);
     }
 
-    public StatementResult getRecipeByUser(String user) {
+    public StatementResult getRecipesByUser(String user) {
         //TODO
         return null;
     }
 
-    public StatementResult getRecipeByMachine(String machine) {
-        //TODO
-        return null;
-    }
-
-    public StatementResult getRecipeByCalories(String calories) {
-        //TODO
-        return null;
-    }
-
-    public StatementResult getRecipeByTime(String time) {
+    public StatementResult getRecipesByTime(String time) {
         //TODO
         return null;
     }
