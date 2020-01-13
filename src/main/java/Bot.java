@@ -85,7 +85,7 @@ public class Bot extends TelegramLongPollingBot {
                 newRecipeSinglePhrase(userId, message_text.substring(11));
                 message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ingrédients avec " +
                                 "leur quantité (séparer les quantités des ingrédients avec '/')\n " +
-                                "Exemple: sucre/250g, farine/150g, eau/2 tasse, confiture d'abricot/1 pot");
+                                "Exemple: sucre/250g, farine/150g, eau/2 tasses, confiture d'abricot/1 pot");
             }else if (message_text.equals("/random")) {
             }else if (message_text.startsWith("/getrecipe ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(
@@ -139,19 +139,19 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.startsWith("/recommendations")) {
             }else if (message_text.equals("/help")) {
                 message = new SendMessage().setChatId(chat_id).setText(
-                        "/newrecipe [nom] -> ???\n" +
-                        "/reset -> ???\n" +
-                        "/random -> ???\n" +
-                        "/recipesbyname [nom] -> ???\n" +
-                        "/recepesbyingredients [i1, i2, ...] -> ???\n" +
-                        "/recipesbyuser [utilisateur] -> ???\n" +
-                        "/recipesbycalory [calories] -> ???\n" +
-                        "/recipesbymachine [m1, m2, ...] -> ???\n" +
-                        "/recipesbytime [temps] -> ???\n" +
-                        "/showrecipe [recette] -> ???\n" +
-                        "/userscooking -> ???\n" +
-                        "/recommendations -> ???\n" +
-                        "/help -> Affiche la liste des commandes disponibles");
+                    "/newrecipe [nom] -> Démarre la création de la recette [nom]\n" +
+                    "/reset -> Met fin au processus de création d'une recette\n" +
+                    "/random -> Affiche une recette aléatoire\n" +
+                    "/getrecipe [nom] -> Affiche les recettes ayant pour nom [nom]\n" +
+                    "/recipesbyingredients [i1, i2, ...] -> Affiche les recettes ayant pour ingrédients [i1, i2, ...]\n" +
+                    "/recipesbyuser [utilisateur] -> Affiche les recettes de l'utilisateur [utilisateur]\n" +
+                    "/recipesbycalory [calories] -> Affiche les recettes ayant moins de [calories] calories\n" +
+                    "/recipesbymachine [m1, m2, ...] -> Affiche les recettes ayant pour ustensiles [m1, m2, ...]\n" +
+                    "/recipesbytime [temps] -> Affiche les recettes prenant [temps] à réaliser à 5 minutes près\n" +
+                    "/showrecipe [recette] -> Affiche la recette [recette]\n" +
+                    "/userscooking -> Affiche les utilisateurs en train de cuisiner\n" +
+                    "/recommendations -> Propose des recettes sur la base de celles consultées jusqu'à présent\n" +
+                    "/help -> Affiche la liste des commandes disponibles");
             }else{
                 message = new SendMessage().setChatId(chat_id).setText(message_text);
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
