@@ -100,7 +100,7 @@ public class Bot extends TelegramLongPollingBot {
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/getrecipe ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(
-                        getReceipeById(message_text.substring(11)));
+                        getRecipeById(message_text.substring(11)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -112,7 +112,7 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.startsWith("/recipesbyingredients ")) {
                 List<String> ingredients = Arrays.asList(message_text.substring(22).replaceAll(" ", "").split(","));
                 message = new SendMessage( ).setChatId(chat_id).setText("With " + message_text.substring(22) + "\n" +
-                        getReceipesByIngredients(ingredients));
+                        getRecipesByIngredients(ingredients));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -122,7 +122,7 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbyuser ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByUser(message_text.substring(15)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByUser(message_text.substring(15)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -131,13 +131,13 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbycalory ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByCalory(message_text.substring(17)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByCalories(message_text.substring(17)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbymachine ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByMachine(message_text.substring(18)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByMachine(message_text.substring(18)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -146,7 +146,7 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbytime ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByTime(message_text.substring(15)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByTime(message_text.substring(15)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 markupInline.setKeyboard(rowsInline);
@@ -266,25 +266,7 @@ public class Bot extends TelegramLongPollingBot {
         Neo4jDAO.getInstance().addRecipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
     }
 
-    private String getReceipesByIngredients(List<String> ingredients){
-        StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipeByIngredients(ingredients);
-        while ( str.hasNext() )
-        {
-            Record record = str.next();
-            String recipeId = record.get(0).asString().substring(1);
-            Document recipe = MongoDBDAO.getInstance().findDocument(recipeId);
-            result.append(recipeId).append("\t\t").append(recipe.get("name")).append("\n");
-        }
-        if(result.toString().equals("")){
-            result.append("No result found");
-        }else{
-            result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
-        }
-        return result.toString();
-    }
-
-    private String getReceipeById(String recipeId){
+    private String getRecipeById(String recipeId){
         Document documentation = MongoDBDAO.getInstance().findDocument(recipeId);
         StatementResult ingredients = Neo4jDAO.getInstance().getRecipeParts(recipeId, "IN", ",rel.quantite");
         StatementResult machines = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
@@ -311,23 +293,49 @@ public class Bot extends TelegramLongPollingBot {
         return recipe;
     }
 
-    private String getReceipeByUser(String user) {
-        //todo
-        return "";
+    private String getRecipeByUser(String user) {
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByUser(user);
+        return getRecipes(result, str);
     }
 
-    private String getReceipeByMachine(String substring) {
-        //todo
-        return "";
+    private String getRecipesByIngredients(List<String> ingredients){
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByIngredients(ingredients);
+        return getRecipes(result, str);
     }
 
-    private String getReceipeByCalory(String calories) {
-        //todo
-        return "";
+    private String getRecipeByMachine(String machine) {
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByMachine(machine);
+        return getRecipes(result, str);
     }
 
-    private String getReceipeByTime(String time) {
-        //todo
-        return "";
+    private String getRecipeByCalories(String calories) {
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByCalories(calories);
+        return getRecipes(result, str);
+    }
+
+    private String getRecipeByTime(String time) {
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByTime(time);
+        return getRecipes(result, str);
+    }
+
+    private String getRecipes(StringBuilder result, StatementResult str) {
+        while ( str.hasNext() )
+        {
+            Record record = str.next();
+            String recipeId = record.get(0).asString().substring(1);
+            Document recipe = MongoDBDAO.getInstance().findDocument(recipeId);
+            result.append(recipeId).append("\t\t").append(recipe.get("name")).append("\n");
+        }
+        if(result.toString().equals("")){
+            result.append("No result found");
+        }else{
+            result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
+        }
+        return result.toString();
     }
 }
