@@ -334,6 +334,15 @@ public class Bot extends TelegramLongPollingBot {
         if (result.toString().equals("")) {
             result.append("No result found");
         } else {
+            /*
+            ┌─────┬─────┬─────┐
+            │  1  │  2  │  3  │
+            ├─────┼─────┼─────┤
+            │  4  │  5  │  6  │
+            ├─────┼─────┼─────┤
+            │  7  │  8  │  9  │
+            └─────┴─────┴─────┘
+             */
             result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
         }
         return result.toString();
