@@ -89,7 +89,7 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.equals("/random")) { //TODO
             }else if (message_text.startsWith("/getrecipe ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(
-                        getReceipeById(message_text.substring(11)));
+                        getRecipeById(message_text.substring(11)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -101,7 +101,7 @@ public class Bot extends TelegramLongPollingBot {
             }else if (message_text.startsWith("/recipesbyingredients ")) {
                 List<String> ingredients = Arrays.asList(message_text.substring(22).replaceAll(" ", "").split(","));
                 message = new SendMessage( ).setChatId(chat_id).setText("With " + message_text.substring(22) + "\n" +
-                        getReceipesByIngredients(ingredients));
+                        getRecipesByIngredients(ingredients));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -255,25 +255,7 @@ public class Bot extends TelegramLongPollingBot {
         Neo4jDAO.getInstance().addRecipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
     }
 
-    private String getReceipesByIngredients(List<String> ingredients){
-        StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipeByIngredients(ingredients);
-        while ( str.hasNext() )
-        {
-            Record record = str.next();
-            String recipeId = record.get(0).asString().substring(1);
-            Document recipe = MongoDBDAO.getInstance().findDocument(recipeId);
-            result.append(recipeId).append("\t\t").append(recipe.get("name")).append("\n");
-        }
-        if(result.toString().equals("")){
-            result.append("No result found");
-        }else{
-            result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
-        }
-        return result.toString();
-    }
-
-    private String getReceipeById(String recipeId){
+    private String getRecipeById(String recipeId){
         Document documentation = MongoDBDAO.getInstance().findDocument(recipeId);
         StatementResult ingredients = Neo4jDAO.getInstance().getRecipeParts(recipeId, "IN", ",rel.quantite");
         StatementResult machines = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
@@ -301,22 +283,48 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String getRecipeByUser(String user) {
-        //todo
-        return "";
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByUser(user);
+        return getRecipes(result, str);
     }
 
-    private String getRecipeByMachine(String substring) {
-        //todo
-        return "";
+    private String getRecipesByIngredients(List<String> ingredients){
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByIngredients(ingredients);
+        return getRecipes(result, str);
+    }
+
+    private String getRecipeByMachine(String machine) {
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByMachine(machine);
+        return getRecipes(result, str);
     }
 
     private String getRecipeByCalories(String calories) {
-        //todo
-        return "";
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByCalories(calories);
+        return getRecipes(result, str);
     }
 
     private String getRecipeByTime(String time) {
-        //todo
-        return "";
+        StringBuilder result = new StringBuilder();
+        StatementResult str = Neo4jDAO.getInstance().getRecipeByTime(time);
+        return getRecipes(result, str);
+    }
+
+    private String getRecipes(StringBuilder result, StatementResult str) {
+        while ( str.hasNext() )
+        {
+            Record record = str.next();
+            String recipeId = record.get(0).asString().substring(1);
+            Document recipe = MongoDBDAO.getInstance().findDocument(recipeId);
+            result.append(recipeId).append("\t\t").append(recipe.get("name")).append("\n");
+        }
+        if(result.toString().equals("")){
+            result.append("No result found");
+        }else{
+            result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
+        }
+        return result.toString();
     }
 }
