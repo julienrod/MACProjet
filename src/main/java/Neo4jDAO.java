@@ -13,40 +13,33 @@ public class Neo4jDAO implements AutoCloseable
     private final Driver driver;
     private static Neo4jDAO instance;
 
-    private Neo4jDAO()
-    {
+    private Neo4jDAO() {
         driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic( "bot", "SyugarDaddy4j"));
     }
 
-    public static Neo4jDAO getInstance()
-    {
-        if(instance == null){
+    public static Neo4jDAO getInstance() {
+        if(instance == null) {
             instance = new Neo4jDAO();
         }
         return instance;
     }
 
     @Override
-    public void close() throws Exception
-    {
+    public void close() throws Exception {
         driver.close();
     }
 
-    public StatementResult addNode(String id, List<String> collections)
-    {
+    public StatementResult addNode(String id, List<String> collections) {
         String args = id;
-        for(String c : collections)
-        {
+        for(String c : collections) {
             args += ":" + c;
         }
         StatementResult result = runRequest("MERGE ("+ args +"{name:'"+ id + "'})");
         return result;
     }
 
-    public StatementResult runRequest(String request)
-    {
-        try ( Session session = driver.session() )
-        {
+    public StatementResult runRequest(String request) {
+        try (Session session = driver.session()) {
             return session.run(request);
         }
     }
@@ -80,21 +73,20 @@ public class Neo4jDAO implements AutoCloseable
                 "CREATE (usr)-[:PROPOSED{date:datetime()}]->(rcp)");
     }
 
-    public void addLike(List<String> liked){
+    public void addLike(List<String> liked) {
         String user = "_" + liked.get(0);
         addNode(user, Arrays.asList("User"));
-        for(int i = 1; i < liked.size(); ++i){
+        for(int i = 1; i < liked.size(); ++i) {
             runRequest("MATCH (usr: User{name: '" + user + "' })," +
                     "(like{ name:'" + liked.get(i) + "'})\n" +
                     "CREATE (usr)-[:LIKE{date:datetime()}]->(like)");
         }
-
     }
 
-    public StatementResult getRecipesByIngredients(List<String> ingredients){
+    public StatementResult getRecipesByIngredients(List<String> ingredients) {
         String requestBegin = "";
         String requestEnd = "WHERE ";
-        for(String ingredient : ingredients){
+        for(String ingredient : ingredients) {
             requestBegin += "MATCH (" + ingredient + ":Ingredient)-[:IN]->(r:Recipe)\n";
             requestEnd += " " + ingredient +  ".name = '" + ingredient + "' AND";
         }
@@ -102,10 +94,10 @@ public class Neo4jDAO implements AutoCloseable
         return runRequest(request);
     }
 
-    public StatementResult getRecipesByTools(List<String> tools){
+    public StatementResult getRecipesByTools(List<String> tools) {
         String requestBegin = "";
         String requestEnd = "WHERE ";
-        for(String tool : tools){
+        for(String tool : tools) {
             requestBegin += "MATCH (" + tool + ":Ustencile)-[:IN]->(r:Recipe)\n";
             requestEnd += " " + tool +  ".name = '" + tool + "' AND";
         }
@@ -113,7 +105,7 @@ public class Neo4jDAO implements AutoCloseable
         return runRequest(request);
     }
 
-    public StatementResult getRecipesByCalories(String calories){
+    public StatementResult getRecipesByCalories(String calories) {
         /*
         String request = "MATCH (" + calories + ":Calories)-[:IN]->(r:Recipe) WHERE r.calories <= " + calories + "RETURN r.name\n";
         return runRequest(request);
@@ -131,7 +123,7 @@ public class Neo4jDAO implements AutoCloseable
         return null;
     }
 
-    public StatementResult getRecipeParts(String recipeId, String relation, String autreparam){
+    public StatementResult getRecipeParts(String recipeId, String relation, String autreparam) {
         return runRequest("MATCH (zeug)-[rel:" + relation + "]->(r:Recipe) WHERE r.name = '_" + recipeId +
                 "' RETURN zeug.name" + autreparam);
     }
