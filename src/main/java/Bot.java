@@ -110,7 +110,7 @@ public class Bot extends TelegramLongPollingBot {
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/recipesbyuser ")) {
+            }else if (message_text.startsWith("/recipesbyuser ")) { //TODO
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -118,8 +118,8 @@ public class Bot extends TelegramLongPollingBot {
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/recipesbycalory ")) {
-            }else if (message_text.startsWith("/recipesbymachine ")) {
+            }else if (message_text.startsWith("/recipesbycalory ")) { //TODO
+            }else if (message_text.startsWith("/recipesbymachine ")) { //TODO
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -127,29 +127,20 @@ public class Bot extends TelegramLongPollingBot {
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/recipesbytime ")) {
-            }else if (message_text.startsWith("/showrecipe ")) {
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this recipe").setCallbackData("update_msg_text"));
-                rowsInline.add(rowInline);
-                markupInline.setKeyboard(rowsInline);
-                message.setReplyMarkup(markupInline);
-            }else if (message_text.equals("/userscooking")) {
-            }else if (message_text.startsWith("/recommendations")) {
+            }else if (message_text.startsWith("/recipesbytime ")) { //TODO
+            }else if (message_text.equals("/userscooking")) { //TODO
+            }else if (message_text.startsWith("/recommendations")) { //TODO
             }else if (message_text.equals("/help")) {
                 message = new SendMessage().setChatId(chat_id).setText(
                     "/newrecipe [nom] -> Démarre la création de la recette [nom]\n" +
                     "/reset -> Met fin au processus de création d'une recette\n" +
                     "/random -> Affiche une recette aléatoire\n" +
-                    "/getrecipe [nom] -> Affiche les recettes ayant pour nom [nom]\n" +
+                    "/getrecipe [id] -> Affiche les recettes ayant pour id [id]\n" +
                     "/recipesbyingredients [i1, i2, ...] -> Affiche les recettes ayant pour ingrédients [i1, i2, ...]\n" +
                     "/recipesbyuser [utilisateur] -> Affiche les recettes de l'utilisateur [utilisateur]\n" +
                     "/recipesbycalory [calories] -> Affiche les recettes ayant moins de [calories] calories\n" +
                     "/recipesbymachine [m1, m2, ...] -> Affiche les recettes ayant pour ustensiles [m1, m2, ...]\n" +
                     "/recipesbytime [temps] -> Affiche les recettes prenant [temps] à réaliser à 5 minutes près\n" +
-                    "/showrecipe [recette] -> Affiche la recette [recette]\n" +
                     "/userscooking -> Affiche les utilisateurs en train de cuisiner\n" +
                     "/recommendations -> Propose des recettes sur la base de celles consultées jusqu'à présent\n" +
                     "/help -> Affiche la liste des commandes disponibles");
