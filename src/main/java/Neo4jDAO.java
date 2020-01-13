@@ -27,8 +27,7 @@ public class Neo4jDAO implements AutoCloseable
     }
 
     @Override
-    public void close() throws Exception
-    {
+    public void close() {
         driver.close();
     }
 
@@ -55,9 +54,7 @@ public class Neo4jDAO implements AutoCloseable
                            List<String> subCategories) {
         List<String> collections = new LinkedList<>();
         collections.add("Recipe");
-        for(String sub : subCategories) {
-            collections.add(sub);
-        }
+        collections.addAll(subCategories);
         addNode("_" + recipeId, collections);
         for(String ingredient : ingredients) {
             String[] ingredientXquantite = ingredient.split("/");
@@ -108,8 +105,7 @@ public class Neo4jDAO implements AutoCloseable
     }
 
     public StatementResult getRecipeByUser(String user) {
-        //TODO
-        return null;
+        return runRequest("MATCH (u:User)-[:PROPOSED]->(r:Recipe) WHERE u.name = '_" + user + "' RETURN r.name;");
     }
 
     public StatementResult getRecipeByMachine(String machine) {
@@ -118,11 +114,6 @@ public class Neo4jDAO implements AutoCloseable
     }
 
     public StatementResult getRecipeByCalories(String calories) {
-        //TODO
-        return null;
-    }
-
-    public StatementResult getRecipeByTime(String time) {
         //TODO
         return null;
     }
