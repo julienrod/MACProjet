@@ -111,7 +111,7 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbyuser ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByUser(message_text.substring(15)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByUser(message_text.substring(15)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -120,13 +120,13 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbycalory ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByCalory(message_text.substring(17)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByCalories(message_text.substring(17)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbymachine ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByMachine(message_text.substring(18)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByMachine(message_text.substring(18)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
@@ -135,17 +135,9 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbytime ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getReceipeByTime(message_text.substring(15)));
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecipeByTime(message_text.substring(15)));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                markupInline.setKeyboard(rowsInline);
-                message.setReplyMarkup(markupInline);
-            }else if (message_text.startsWith("/showrecipe ")) {
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this recipe").setCallbackData("update_msg_text"));
-                rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.equals("/userscooking")) {
@@ -308,22 +300,22 @@ public class Bot extends TelegramLongPollingBot {
         return recipe;
     }
 
-    private String getReceipeByUser(String user) {
+    private String getRecipeByUser(String user) {
         //todo
         return "";
     }
 
-    private String getReceipeByMachine(String substring) {
+    private String getRecipeByMachine(String substring) {
         //todo
         return "";
     }
 
-    private String getReceipeByCalory(String calories) {
+    private String getRecipeByCalories(String calories) {
         //todo
         return "";
     }
 
-    private String getReceipeByTime(String time) {
+    private String getRecipeByTime(String time) {
         //todo
         return "";
     }
