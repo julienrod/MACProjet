@@ -43,7 +43,7 @@ public class Neo4jDAO implements AutoCloseable
         }
     }
 
-    void addRecipe(long userId, String recipeId, List<String> ingredients, List<String> ustenciles,
+    void addRecipe(long userId, String recipeId, List<String> ingredients, List<String> tools,
                    List<String> subCategories) {
         List<String> collections = new LinkedList<>();
         collections.add("Recipe");
@@ -58,9 +58,9 @@ public class Neo4jDAO implements AutoCloseable
                     ingredientXquantite[1] + "'}]->(rcp)");
         }
 
-        for(String ustencile : ustenciles) {
-            addNode(ustencile, Collections.singletonList("Ustencile"));
-            runRequest("MATCH (ust: Ustencile{name: '" + ustencile + "' })," +
+        for(String tool : tools) {
+            addNode(tool, Collections.singletonList("Ustencile"));
+            runRequest("MATCH (ust: Ustencile{name: '" + tool + "' })," +
                     "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
                     "CREATE (ust)-[:USEFULL]->(rcp)");
         }
