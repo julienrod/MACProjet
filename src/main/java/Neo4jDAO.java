@@ -123,8 +123,8 @@ public class Neo4jDAO implements AutoCloseable
         return null;
     }
 
-    public StatementResult getRecipeParts(String recipeId, String relation, String autreparam) {
+    public StatementResult getRecipeParts(String recipeId, String relation, String other) {
         return runRequest("MATCH (zeug)-[rel:" + relation + "]->(r:Recipe) WHERE r.name = '_" + recipeId +
-                "' RETURN zeug.name" + autreparam);
+                "' RETURN zeug.name" + other);
     }
 }
