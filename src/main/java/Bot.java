@@ -86,7 +86,7 @@ public class Bot extends TelegramLongPollingBot {
                 message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ingrédients avec " +
                                 "leur quantité (séparer les quantités des ingrédients avec '/')\n " +
                                 "Exemple: sucre/250g, farine/150g, eau/2 tasses, confiture d'abricot/1 pot");
-            }else if (message_text.equals("/random")) {
+            }else if (message_text.equals("/random")) { //TODO
             }else if (message_text.startsWith("/getrecipe ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(
                         getReceipeById(message_text.substring(11)));
