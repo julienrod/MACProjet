@@ -253,7 +253,7 @@ public class Bot extends TelegramLongPollingBot {
         String kcal = addRecipeData.get(id).get(4).get(0);
         List<String> ingredients = addRecipeData.get(id).get(1);
         List<String> ustenciles = addRecipeData.get(id).get(2);
-        List<String> subcategories = null;
+        List<String> subcategories;
         if (addRecipeData.get(id).size() > 6) {
             subcategories = addRecipeData.get(id).get(6);
         }else{
@@ -270,26 +270,30 @@ public class Bot extends TelegramLongPollingBot {
         StatementResult ingredients = Neo4jDAO.getInstance().getRecipeParts(recipeId, "IN", ",rel.quantite");
         StatementResult tools = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
         StatementResult user = Neo4jDAO.getInstance().getRecipeParts(recipeId, "PROPOSED", ",rel.date");
-        String recipe = documentation.get("name").toString() + "\nIngrédients : \n";
+        StringBuilder recipe = new StringBuilder(documentation.get("name").toString() + "\nIngrédients : \n");
         while (ingredients.hasNext())
         {
             Record record = ingredients.next();
-            recipe += " - " + record.get(0).asString() + " " + record.get(1).asString() + "\n";
+            recipe.append(" - ").append(record.get(0).asString()).append(" ").append(record.get(1).asString()).append("\n");
         }
-        recipe += "\nUstensiles utilisés : \n";
+
+        recipe.append("\nUstensiles utilisés : \n");
         while (tools.hasNext())
         {
             Record record = tools.next();
-            recipe += " - " +  record.get(0).asString() + "\n";
+            recipe.append(" - ").append(record.get(0).asString()).append("\n");
         }
-        recipe += "Temps de préparation : " +  documentation.get("time").toString() + "\n" + "Calories : " + documentation.get("kcal").toString() + "\n";
-        recipe += "Marche à suivre\n" + documentation.get("description") + "\n\n";
+
+        recipe.append("Temps de préparation : ").append(documentation.get("time").toString()).append("\n")
+              .append("Calories : ").append(documentation.get("kcal").toString()).append("\n");
+        recipe.append("Marche à suivre\n").append(documentation.get("description")).append("\n\n");
+        
         while (user.hasNext())
         {
             Record record = user.next();
-            recipe += "Proposée par n°" + record.get(0).asString() + " le " + record.get(1) + "\n";
+            recipe.append("Proposée par n°").append(record.get(0).asString()).append(" le ").append(record.get(1)).append("\n");
         }
-        return recipe;
+        return recipe.toString();
     }
 
     private String getRecipesByUser(String user) {
