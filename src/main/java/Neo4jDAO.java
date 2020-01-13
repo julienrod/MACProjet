@@ -1,8 +1,4 @@
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.*;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -134,5 +130,16 @@ public class Neo4jDAO implements AutoCloseable
     public StatementResult getRecipesByTime(String time) {
         //TODO
         return null;
+    }
+
+    public StatementResult getSimilarUsers(String recipeId){
+        String request = "MATCH(r:Recipe) WHERE r.name = '_"+ recipeId+ "' WITH r\n" +
+                "MATCH (i:Ingredient)-[:IN]->(r)\n" +
+                "WITH i, r\n" +
+                "MATCH (i)-[:IN]->(r2:Recipe) WHERE labels(r) = labels(r2) \n" +
+                "WITH r2 \n" +
+                "MATCH (u:User)-[:PROPOSED]->(r2) \n" +
+                "RETURN u.name;";
+        return runRequest(request);
     }
 }

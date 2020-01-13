@@ -148,11 +148,8 @@ public class Bot extends TelegramLongPollingBot {
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbytime ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(getRecipesByTime(message_text.substring(15)));
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                markupInline.setKeyboard(rowsInline);
-                message.setReplyMarkup(markupInline);
-            }else if (message_text.equals("/userscooking")) { //TODO
+            }else if (message_text.startsWith("/userscooking ")) {
+                message = new SendMessage( ).setChatId(chat_id).setText(getUserCooking(message_text.substring(14)));
             }else if (message_text.startsWith("/recommendations")) { //TODO
             }else if (message_text.equals("/help")) {
                 message = new SendMessage().setChatId(chat_id).setText(
@@ -340,5 +337,11 @@ public class Bot extends TelegramLongPollingBot {
             result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
         }
         return result.toString();
+    }
+
+    private String getUserCooking(String recipeId){
+        String result = "";
+        StatementResult users = Neo4jDAO.getInstance().getSimilarUsers(recipeId);
+        return result;
     }
 }
