@@ -1,5 +1,3 @@
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
@@ -8,6 +6,8 @@ import com.mongodb.client.model.Aggregates;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -66,6 +66,18 @@ class MongoDBDAO {
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
         return collection.find(eq("_id", new ObjectId(id))).first();
+    }
+
+    public List<Document> findDocumentByTime(String time) {
+        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
+        MongoClient mongoClient = new MongoClient(connectionString);
+        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoCollection<Document> collection = database.getCollection("recipe");
+        List<Document> ld = new ArrayList<>();
+        for (Document d : collection.find(eq("_time", new ObjectId(time)))) {
+            ld.add(d);
+        }
+        return ld;
     }
 
     Document getRandomRecipe() {

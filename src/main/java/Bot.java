@@ -319,9 +319,17 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String getRecipesByTime(String time) {
+        List<Document> ld = MongoDBDAO.getInstance().findDocumentByTime(time);
         StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipesByTime(time);
-        return getRecipes(result, str);
+        for (Document recipe : ld) {
+            result.append(recipe.get("_id")).append("\t\t").append(recipe.get("name")).append("\n");
+        }
+        if(result.toString().equals("")){
+            result.append("No result found");
+        }else{
+            result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
+        }
+        return result.toString();
     }
 
     private String getRecipes(StringBuilder result, StatementResult str) {
