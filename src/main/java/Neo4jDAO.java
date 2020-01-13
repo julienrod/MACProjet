@@ -133,6 +133,7 @@ public class Neo4jDAO implements AutoCloseable
     }
 
     public StatementResult getSimilarUsers(String recipeId){
+        //TODO Controller si cette requête marche bel et bien avec une base de données plus fournie
         String request = "MATCH(r:Recipe) WHERE r.name = '_"+ recipeId+ "' WITH r\n" +
                 "MATCH (i:Ingredient)-[:IN]->(r)\n" +
                 "WITH i, r\n" +

@@ -68,6 +68,14 @@ public class MongoDBDAO {
         return collection.find(eq("_id", new ObjectId(id))).first();
     }
 
+    public Document findUser(String id){
+        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
+        MongoClient mongoClient = new MongoClient(connectionString);
+        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoCollection<Document> collection = database.getCollection("user");
+        return collection.find(eq("id", Integer.parseInt(id))).first();
+    }
+
     public Document getRandomRecipe(){
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);

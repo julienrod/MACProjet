@@ -340,8 +340,15 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String getUserCooking(String recipeId){
-        String result = "";
+        StringBuilder result = new StringBuilder("Utilisateurs ayant entré une recette similaire : \n");
         StatementResult users = Neo4jDAO.getInstance().getSimilarUsers(recipeId);
-        return result;
+        while (users.hasNext())
+        {
+            Record record = users.next();
+            String userId = record.get(0).asString().substring(1);
+            Document user = MongoDBDAO.getInstance().findUser(userId);
+            result.append(userId).append("\t\t").append(user.get("username")).append("\n");
+        }
+        return result.toString();
     }
 }
