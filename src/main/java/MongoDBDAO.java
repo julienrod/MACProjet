@@ -2,6 +2,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
@@ -74,6 +75,14 @@ public class MongoDBDAO {
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
         return collection.find(eq("id", Integer.parseInt(id))).first();
+    }
+
+    public FindIterable<Document> findDocumentByTime(String time){
+        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
+        MongoClient mongoClient = new MongoClient(connectionString);
+        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoCollection<Document> collection = database.getCollection("user");
+        return collection.find(eq("time", time));
     }
 
     public Document getRandomRecipe(){

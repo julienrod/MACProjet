@@ -1,4 +1,5 @@
 //Sources : https://monsterdeveloper.gitbooks.io/writing-telegram-bots-on-java/content/
+import com.mongodb.client.FindIterable;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.neo4j.driver.v1.Record;
@@ -320,7 +321,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String getRecipesByTime(String time) {
-        List<Document> ld = MongoDBDAO.getInstance().findDocumentByTime(time);
+        FindIterable<Document> ld = MongoDBDAO.getInstance().findDocumentByTime(time);
         StringBuilder result = new StringBuilder();
         for (Document recipe : ld) {
             result.append(recipe.get("_id")).append("\t\t").append(recipe.get("name")).append("\n");
