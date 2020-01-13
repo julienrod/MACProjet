@@ -140,8 +140,8 @@ public class Bot extends TelegramLongPollingBot {
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
-            }else if (message_text.equals("/userscooking")) {
-            }else if (message_text.startsWith("/recommendations")) {
+            }else if (message_text.equals("/userscooking")) { //TODO
+            }else if (message_text.startsWith("/recommendations")) { //TODO
             }else if (message_text.equals("/help")) {
                 message = new SendMessage().setChatId(chat_id).setText(
                     "/newrecipe [nom] -> Démarre la création de la recette [nom]\n" +
