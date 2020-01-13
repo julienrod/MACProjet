@@ -4,6 +4,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -65,5 +66,13 @@ public class MongoDBDAO {
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
         return collection.find(eq("_id", new ObjectId(id))).first();
+    }
+
+    public Document getRandomRecipe(){
+        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
+        MongoClient mongoClient = new MongoClient(connectionString);
+        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoCollection<Document> collection = database.getCollection("recipe");
+        return collection.aggregate(Arrays.asList(Aggregates.sample(1))).first();
     }
 }

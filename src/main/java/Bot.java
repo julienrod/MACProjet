@@ -86,7 +86,18 @@ public class Bot extends TelegramLongPollingBot {
                 message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier les ingrédients avec " +
                                 "leur quantité (séparer les quantités des ingrédients avec '/')\n " +
                                 "Exemple: sucre/250g, farine/150g, eau/2 tasses, confiture d'abricot/1 pot");
-            }else if (message_text.equals("/random")) { //TODO
+            }else if (message_text.equals("/random")) {
+                Document random = MongoDBDAO.getInstance().getRandomRecipe();
+                String id = random.get("_id").toString();
+                message = new SendMessage().setChatId(chat_id).setText(getReceipeById(id));
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                rowInline.add(new InlineKeyboardButton().setText("Like this receipe").setCallbackData("Like "
+                        + userId  + " _"  + id));
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/getrecipe ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(
                         getReceipeById(message_text.substring(11)));
