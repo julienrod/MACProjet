@@ -262,10 +262,41 @@ public class Bot extends TelegramLongPollingBot {
         } else {
             subcategories = new LinkedList<>();
         }
-        ObjectId recipeId = MongoDBDAO.getInstance().addRecipe(name, description, time, kcal);
+        ObjectId recipeId = MongoDBDAO.getInstance().addRecipe(name, description, convertTimeToInt(time), getIntFromKcal(kcal));
         Neo4jDAO.getInstance().addRecipe(id, recipeId.toString(), ingredients, ustenciles, subcategories);
         addRecipeData.remove(id);
         addRecipeStatus.remove(id);
+    }
+
+    private int convertTimeToInt(String time){
+        String[] parts = time.split(" ");
+        if(parts.length > 1){
+            return Integer.parseInt(parts[0].substring(0, parts[0].length() -1)) * 60 + Integer.parseInt(parts[1].substring(0, parts[1].length() -1));
+        }
+        if(parts[0].endsWith("m")){
+            return Integer.parseInt(parts[0].substring(0, parts[0].length() -1));
+        }
+        return Integer.parseInt(parts[0].substring(0, parts[0].length() -1)) * 60;
+    }
+
+    private String convertIntToTime(int i){
+        String time = "";
+        int heure = i /60;
+        int minute = i - heure;
+        if(heure != 0){
+            time += heure + "h ";
+        }
+        if(minute != 0){
+            time += minute + "m";
+        }
+        return time;
+    }
+
+    private int getIntFromKcal(String kcal){
+        if(kcal.endsWith(kcal)){
+            kcal = kcal.substring(0, kcal.length() -4);
+        }
+        return Integer.parseInt(kcal);
     }
 
     private String getRecipeById(String recipeId){
@@ -285,8 +316,8 @@ public class Bot extends TelegramLongPollingBot {
             recipe.append(" - ").append(record.get(0).asString()).append("\n");
         }
 
-        recipe.append("Temps de préparation : ").append(documentation.get("time").toString()).append("\n")
-              .append("Calories : ").append(documentation.get("kcal").toString()).append("\n");
+        recipe.append("Temps de préparation : ").append(convertIntToTime((int)documentation.get("time"))).append("\n")
+              .append("Calories : ").append(documentation.get("kcal").toString()).append("kcal\n");
         recipe.append("Marche à suivre\n").append(documentation.get("description")).append("\n\n");
 
         while (user.hasNext()) {
@@ -321,7 +352,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String getRecipesByTime(String time) {
-        FindIterable<Document> ld = MongoDBDAO.getInstance().findDocumentByTime(time);
+        FindIterable<Document> ld = MongoDBDAO.getInstance().findDocumentByTime(convertTimeToInt(time));
         StringBuilder result = new StringBuilder();
         for (Document recipe : ld) {
             result.append(recipe.get("_id")).append("\t\t").append(recipe.get("name")).append("\n");

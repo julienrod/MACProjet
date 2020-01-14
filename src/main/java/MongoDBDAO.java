@@ -6,9 +6,11 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import javax.management.Query;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,7 +48,7 @@ public class MongoDBDAO {
         }
     }
 
-    public ObjectId addRecipe(String recipeName, String recipeDescription, String time, String kcal) {
+    public ObjectId addRecipe(String recipeName, String recipeDescription, int time, int kcal) {
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
@@ -77,12 +79,15 @@ public class MongoDBDAO {
         return collection.find(eq("id", Integer.parseInt(id))).first();
     }
 
-    public FindIterable<Document> findDocumentByTime(String time){
+    public FindIterable<Document> findDocumentByTime(int time){
         MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
-        return collection.find(eq("time", time));
+        int min = time -5;
+        int max = time +5;
+        return collection.find(Filters.and(Filters.gte("time",
+                min), Filters.lte("time",  max)));
     }
 
     public Document getRandomRecipe(){
