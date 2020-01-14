@@ -1,5 +1,3 @@
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
@@ -10,7 +8,6 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import javax.management.Query;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,6 +15,13 @@ import static com.mongodb.client.model.Filters.eq;
 
 public class MongoDBDAO {
     private static MongoDBDAO instance;
+    private MongoClientURI connectionString;
+    private MongoClient mongoclient;
+    private MongoDatabase getDatabase(String database){
+        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
+        MongoClient mongoClient = new MongoClient(connectionString);
+        return mongoClient.getDatabase(database);
+    }
     private MongoDBDAO(){}
     public static MongoDBDAO getInstance() {
         if(instance == null) {
@@ -26,9 +30,7 @@ public class MongoDBDAO {
         return instance;
     }
     public void check(String firstName, String lastName, int userId, String username) {
-        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
-        MongoClient mongoClient = new MongoClient(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
 
         long found = collection.count(Document.parse("{id : " + Integer.toString(userId) + "}"));
@@ -38,20 +40,18 @@ public class MongoDBDAO {
                     .append("id", userId)
                     .append("username", username);
             collection.insertOne(doc);
-            mongoClient.close();
+            this.mongoclient.close();
             List<String> collections = Arrays.asList("User");
             Neo4jDAO.getInstance().addNode("_" + userId, collections);
             System.out.println("User doesn't exist in database. Written.");
         } else {
             System.out.println("User already exists in database.");
-            mongoClient.close();
+            this.mongoclient.close();
         }
     }
 
     public ObjectId addRecipe(String recipeName, String recipeDescription, int time, int kcal) {
-        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
-        MongoClient mongoClient = new MongoClient(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
         Document doc = new Document("name", recipeName)
                 .append("description", recipeDescription)
@@ -59,42 +59,42 @@ public class MongoDBDAO {
                 .append("kcal", kcal);
         collection.insertOne(doc);
         ObjectId id = (ObjectId)doc.get( "_id" );
-        mongoClient.close();
+        mongoclient.close();
         return id;
     }
 
     public Document findDocument(String id){
-        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
-        MongoClient mongoClient = new MongoClient(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoDatabase database = mongoclient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
-        return collection.find(eq("_id", new ObjectId(id))).first();
+        Document doc = collection.find(eq("_id", new ObjectId(id))).first();
+        mongoclient.close();
+        return doc;
     }
 
     public Document findUser(String id){
-        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
-        MongoClient mongoClient = new MongoClient(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
-        return collection.find(eq("id", Integer.parseInt(id))).first();
+        Document doc = collection.find(eq("id", Integer.parseInt(id))).first();
+        mongoclient.close();
+        return doc;
     }
 
     public FindIterable<Document> findDocumentByTime(int time){
-        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
-        MongoClient mongoClient = new MongoClient(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
         int min = time -5;
         int max = time +5;
-        return collection.find(Filters.and(Filters.gte("time",
+        FindIterable<Document> docs = collection.find(Filters.and(Filters.gte("time",
                 min), Filters.lte("time",  max)));
+        mongoclient.close();
+        return docs;
     }
 
     public Document getRandomRecipe(){
-        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
-        MongoClient mongoClient = new MongoClient(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
-        return collection.aggregate(Arrays.asList(Aggregates.sample(1))).first();
+        Document doc = collection.aggregate(Arrays.asList(Aggregates.sample(1))).first();
+        mongoclient.close();
+        return doc;
     }
 }
