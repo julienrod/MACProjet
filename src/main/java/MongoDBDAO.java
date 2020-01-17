@@ -18,9 +18,9 @@ public class MongoDBDAO {
     private MongoClientURI connectionString;
     private MongoClient mongoclient;
     private MongoDatabase getDatabase(String database){
-        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
-        MongoClient mongoClient = new MongoClient(connectionString);
-        return mongoClient.getDatabase(database);
+        connectionString = new MongoClientURI("mongodb://localhost:27017");
+        mongoclient = new MongoClient(connectionString);
+        return mongoclient.getDatabase(database);
     }
     private MongoDBDAO(){}
     public static MongoDBDAO getInstance() {
@@ -59,7 +59,6 @@ public class MongoDBDAO {
                 .append("kcal", kcal);
         collection.insertOne(doc);
         ObjectId id = (ObjectId)doc.get( "_id" );
-        mongoclient.close();
         return id;
     }
 
@@ -67,7 +66,6 @@ public class MongoDBDAO {
         MongoDatabase database = mongoclient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
         Document doc = collection.find(eq("_id", new ObjectId(id))).first();
-        mongoclient.close();
         return doc;
     }
 
@@ -75,18 +73,24 @@ public class MongoDBDAO {
         MongoDatabase database = getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("user");
         Document doc = collection.find(eq("id", Integer.parseInt(id))).first();
-        mongoclient.close();
         return doc;
     }
 
     public FindIterable<Document> findDocumentByTime(int time){
         MongoDatabase database = getDatabase("syugardaddy");
-        MongoCollection<Document> collection = database.getCollection("user");
+        MongoCollection<Document> collection = database.getCollection("recipe");
         int min = time -5;
         int max = time +5;
         FindIterable<Document> docs = collection.find(Filters.and(Filters.gte("time",
                 min), Filters.lte("time",  max)));
-        mongoclient.close();
+        return docs;
+    }
+
+    public FindIterable<Document> findDocumentByCalories(int calories){
+        MongoDatabase database = getDatabase("syugardaddy");
+        MongoCollection<Document> collection = database.getCollection("recipe");
+        FindIterable<Document> docs = collection.find(Filters.and(Filters.gte("kcal",
+                calories - 50), Filters.lte("kcal",  calories)));
         return docs;
     }
 
@@ -94,7 +98,6 @@ public class MongoDBDAO {
         MongoDatabase database = getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
         Document doc = collection.aggregate(Arrays.asList(Aggregates.sample(1))).first();
-        mongoclient.close();
         return doc;
     }
 }

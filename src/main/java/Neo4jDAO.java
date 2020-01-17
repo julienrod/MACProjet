@@ -55,8 +55,9 @@ public class Neo4jDAO implements AutoCloseable
         }
 
         for (String tool : tools) {
-            addNode(tool, Collections.singletonList("Ustencile"));
-            runRequest("MATCH (ust: Ustencile{name: '" + tool + "' })," +
+            tool = tool.replaceAll("-", " ");
+            addNode(tool, Collections.singletonList("Ustensile"));
+            runRequest("MATCH (ust: Ustensile{name: '" + tool + "' })," +
                     "(rcp:Recipe{ name:'_" + recipeId +"'})\n" +
                     "CREATE (ust)-[:USEFULL]->(rcp)");
         }
@@ -98,20 +99,8 @@ public class Neo4jDAO implements AutoCloseable
         return runRequest(request);
     }
 
-    StatementResult getRecipesByCalories(String calories) {
-        /*
-        String request = "MATCH (" + calories + ":Calories)-[:IN]->(r:Recipe) WHERE r.calories <= " + calories + "RETURN r.name\n";
-        return runRequest(request);
-        */
-        return null;
-    }
-    public StatementResult getRecipeByUser(String user) {
+    public StatementResult getRecipesByUser(String user) {
         return runRequest("MATCH (u:User)-[:PROPOSED]->(r:Recipe) WHERE u.name = '_" + user + "' RETURN r.name;");
-    }
-
-    StatementResult getRecipesByUser(String user) {
-        //TODO
-        return null;
     }
 
     StatementResult getRecipeParts(String recipeId, String relation, String other) {
@@ -128,6 +117,25 @@ public class Neo4jDAO implements AutoCloseable
                 "WITH r2 \n" +
                 "MATCH (u:User)-[:PROPOSED]->(r2) \n" +
                 "RETURN u.name;";
+        return runRequest(request);
+    }
+
+    public StatementResult getRecommandation(long userId){
+        //TODO Controller si cette requête marche bel et bien avec une base de données plus fournie
+        String partieRecurente = "WITH usr, u \n" +
+                "MATCH (usr)-[:LIKE]->(r:Recipe)\n" +
+                "WITH usr, u, r\n" +
+                "MATCH (u)-[:PROPOSED]->(result:Recipe) WHERE labels(result) = labels(r) AND  " +
+                "NOT (usr)-[:LIKE]->(result)\n AND NOT (usr) = (u)" +
+                "RETURN result.name \n";
+        String request = "MATCH(usr:User) WHERE usr.name = '_"+ userId + "' \n" +
+                "WITH usr" +
+                "MATCH(usr)-[:LIKE]->(u:User) Return u\n" +
+                partieRecurente +
+                "UNION MATCH(usr)-[:LIKE]->(mitm:User)-[:Like]->(u:User) \n" +
+                partieRecurente +
+                "UNION MATCH(usr)-[:LIKE]->(mitm:Recipe)<-[:PROPOSED]-(u:User)\n" +
+                partieRecurente;
         return runRequest(request);
     }
 }

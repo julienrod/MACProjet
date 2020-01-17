@@ -131,7 +131,7 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             } else if (message_text.startsWith("/recipesbycalories ")) {
-                String calories = message_text.substring(17).replaceAll(" ", "");
+                String calories = message_text.substring(18).replaceAll(" ", "");
                 message = new SendMessage().setChatId(chat_id).setText("With " + message_text.substring(17) + "\n" +
                         getRecipesByCalories(calories));
             } else if (message_text.startsWith("/recipesbytools ")) {
@@ -147,22 +147,25 @@ public class Bot extends TelegramLongPollingBot {
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
             }else if (message_text.startsWith("/recipesbytime ")) {
-                message = new SendMessage( ).setChatId(chat_id).setText(getRecipesByTime(message_text.substring(15)));
+                String str = message_text.substring(15);
+                String test = getRecipesByTime(str);
+                message = new SendMessage( ).setChatId(chat_id).setText(test);
             }else if (message_text.startsWith("/userscooking ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(getUserCooking(message_text.substring(14)));
-            }else if (message_text.startsWith("/recommendations")) { //TODO
+            }else if (message_text.equals("/recommendations")) {
+                message = new SendMessage( ).setChatId(chat_id).setText(getRecommandation(userId));
             }else if (message_text.equals("/help")) {
                 message = new SendMessage().setChatId(chat_id).setText(
                     "/newrecipe [nom] -> Démarre la création de la recette [nom]\n" +
                     "/reset -> Met fin au processus de création d'une recette\n" +
                     "/random -> Affiche une recette aléatoire\n" +
-                    "/getrecipe [id] -> Affiche les recettes ayant pour id [id]\n" +
+                    "/getrecipe [id] -> Affiche la recette ayant pour id [id]\n" +
                     "/recipesbyingredients [i1, i2, ...] -> Affiche les recettes ayant pour ingrédients [i1, i2, ...]\n" +
                     "/recipesbyuser [utilisateur] -> Affiche les recettes de l'utilisateur [utilisateur]\n" +
                     "/recipesbycalories [calories] -> Affiche les recettes ayant moins de [calories] calories\n" +
                     "/recipesbytools [t1, t2, ...] -> Affiche les recettes ayant pour ustensiles [t1, t2, ...]\n" +
                     "/recipesbytime [temps] -> Affiche les recettes prenant [temps] à réaliser à 5 minutes près\n" +
-                    "/userscooking -> Affiche les utilisateurs en train de cuisiner\n" +
+                    "/userscooking [id]-> Affiche les utilisateurs ayant fait des recettes similaires.\n" +
                     "/recommendations -> Propose des recettes sur la base de celles consultées jusqu'à présent\n" +
                     "/help -> Affiche la liste des commandes disponibles");
             } else {
@@ -293,7 +296,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private int getIntFromKcal(String kcal){
-        if(kcal.endsWith(kcal)){
+        if(kcal.endsWith("kcal")){
             kcal = kcal.substring(0, kcal.length() -4);
         }
         return Integer.parseInt(kcal);
@@ -330,42 +333,34 @@ public class Bot extends TelegramLongPollingBot {
     private String getRecipesByUser(String user) {
         StringBuilder result = new StringBuilder();
         StatementResult str = Neo4jDAO.getInstance().getRecipesByUser(user);
-        return getRecipes(result, str);
+        return getRecipesNeo(result, str);
     }
 
     private String getRecipesByIngredients(List<String> ingredients) {
         StringBuilder result = new StringBuilder();
         StatementResult str = Neo4jDAO.getInstance().getRecipesByIngredients(ingredients);
-        return getRecipes(result, str);
+        return getRecipesNeo(result, str);
     }
 
     private String getRecipesByTools(List<String> tools) {
         StringBuilder result = new StringBuilder();
         StatementResult str = Neo4jDAO.getInstance().getRecipesByTools(tools);
-        return getRecipes(result, str);
+        return getRecipesNeo(result, str);
     }
 
     private String getRecipesByCalories(String calories) {
         StringBuilder result = new StringBuilder();
-        StatementResult str = Neo4jDAO.getInstance().getRecipesByCalories(calories);
-        return getRecipes(result, str);
+        FindIterable<Document> ld = MongoDBDAO.getInstance().findDocumentByCalories(getIntFromKcal(calories));
+        return getRecipesMongo(result, ld);
     }
 
     private String getRecipesByTime(String time) {
         FindIterable<Document> ld = MongoDBDAO.getInstance().findDocumentByTime(convertTimeToInt(time));
         StringBuilder result = new StringBuilder();
-        for (Document recipe : ld) {
-            result.append(recipe.get("_id")).append("\t\t").append(recipe.get("name")).append("\n");
-        }
-        if(result.toString().equals("")){
-            result.append("No result found");
-        }else{
-            result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
-        }
-        return result.toString();
+        return getRecipesMongo(result, ld);
     }
 
-    private String getRecipes(StringBuilder result, StatementResult str) {
+    private String getRecipesNeo(StringBuilder result, StatementResult str) {
         while (str.hasNext()) {
             Record record = str.next();
             String recipeId = record.get(0).asString().substring(1);
@@ -375,15 +370,17 @@ public class Bot extends TelegramLongPollingBot {
         if (result.toString().equals("")) {
             result.append("No result found");
         } else {
-            /*
-            ┌─────┬─────┬─────┐
-            │  1  │  2  │  3  │
-            ├─────┼─────┼─────┤
-            │  4  │  5  │  6  │
-            ├─────┼─────┼─────┤
-            │  7  │  8  │  9  │
-            └─────┴─────┴─────┘
-             */
+            result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
+        }
+        return result.toString();
+    }
+    private String getRecipesMongo(StringBuilder result, FindIterable<Document> ld) {
+        for (Document recipe : ld) {
+            result.append(recipe.get("_id")).append("\t\t").append(recipe.get("name")).append("\n");
+        }
+        if(result.toString().equals("")){
+            result.append("No result found");
+        }else{
             result.insert(0, "id \t\t\t\t\t\t\t\t\t nom\n");
         }
         return result.toString();
@@ -398,6 +395,19 @@ public class Bot extends TelegramLongPollingBot {
             String userId = record.get(0).asString().substring(1);
             Document user = MongoDBDAO.getInstance().findUser(userId);
             result.append(userId).append("\t\t").append(user.get("username")).append("\n");
+        }
+        return result.toString();
+    }
+
+    private String getRecommandation(long userId){
+        StringBuilder result = new StringBuilder("Recommandations : \n");
+        StatementResult recommandations = Neo4jDAO.getInstance().getRecommandation(userId);
+        while (recommandations.hasNext())
+        {
+            Record record = recommandations.next();
+            String recommandation = record.get(0).asString().substring(1);
+            Document user = MongoDBDAO.getInstance().findUser(recommandation);
+            result.append(userId).append("\t\t").append(user.get("name\n")).append("\n");
         }
         return result.toString();
     }
