@@ -92,7 +92,7 @@ public class Neo4jDAO implements AutoCloseable
         StringBuilder requestBegin = new StringBuilder();
         StringBuilder requestEnd = new StringBuilder("WHERE ");
         for (String tool : tools) {
-            requestBegin.append("MATCH (").append(tool).append(":Ustencile)-[:IN]->(r:Recipe)\n");
+            requestBegin.append("MATCH (").append(tool).append(":Ustensile)-[:USEFULL]->(r:Recipe)\n");
             requestEnd.append(" ").append(tool).append(".name = '").append(tool).append("' AND");
         }
         String request = requestBegin + requestEnd.substring(0, requestEnd.length() -3) + "\nRETURN r.name\n";
@@ -129,8 +129,8 @@ public class Neo4jDAO implements AutoCloseable
                 "NOT (usr)-[:LIKE]->(result)\n AND NOT (usr) = (u)" +
                 "RETURN result.name \n";
         String request = "MATCH(usr:User) WHERE usr.name = '_"+ userId + "' \n" +
-                "WITH usr" +
-                "MATCH(usr)-[:LIKE]->(u:User) Return u\n" +
+                "WITH usr\n" +
+                "MATCH(usr)-[:LIKE]->(u:User) \n" +
                 partieRecurente +
                 "UNION MATCH(usr)-[:LIKE]->(mitm:User)-[:Like]->(u:User) \n" +
                 partieRecurente +

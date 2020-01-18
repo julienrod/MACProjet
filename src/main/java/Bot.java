@@ -126,7 +126,8 @@ public class Bot extends TelegramLongPollingBot {
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Like this user").setCallbackData("update_msg_text"));
+                rowInline.add(new InlineKeyboardButton().setText("Like this user").setCallbackData("Like " + userId  +
+                        " _" + message_text.substring(15)));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
@@ -135,14 +136,14 @@ public class Bot extends TelegramLongPollingBot {
                 message = new SendMessage().setChatId(chat_id).setText("With " + message_text.substring(17) + "\n" +
                         getRecipesByCalories(calories));
             } else if (message_text.startsWith("/recipesbytools ")) {
-                List<String> tools = Arrays.asList(message_text.substring(18).replaceAll(" ", "").split(","));
-                message = new SendMessage().setChatId(chat_id).setText("With " + message_text.substring(18) + "\n" +
+                List<String> tools = Arrays.asList(message_text.substring(16).replaceAll(" ", "").split(","));
+                message = new SendMessage().setChatId(chat_id).setText("With " + message_text.substring(16) + "\n" +
                         getRecipesByTools(tools));
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
                 rowInline.add(new InlineKeyboardButton().setText("Like these tools").setCallbackData(
-                        "Like " + userId  + " " + message_text.substring(18)));
+                        "Like " + userId  + " " + message_text.substring(16)));
                 rowsInline.add(rowInline);
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);

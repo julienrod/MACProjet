@@ -40,13 +40,13 @@ public class MongoDBDAO {
                     .append("id", userId)
                     .append("username", username);
             collection.insertOne(doc);
-            this.mongoclient.close();
+            //this.mongoclient.close();
             List<String> collections = Arrays.asList("User");
             Neo4jDAO.getInstance().addNode("_" + userId, collections);
             System.out.println("User doesn't exist in database. Written.");
         } else {
             System.out.println("User already exists in database.");
-            this.mongoclient.close();
+            //this.mongoclient.close();
         }
     }
 
