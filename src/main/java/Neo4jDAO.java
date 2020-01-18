@@ -110,13 +110,26 @@ public class Neo4jDAO implements AutoCloseable
 
     public StatementResult getSimilarUsers(String recipeId){
         //TODO Controller si cette requête marche bel et bien avec une base de données plus fournie
-        String request = "MATCH(r:Recipe) WHERE r.name = '_"+ recipeId+ "' WITH r\n" +
+        String request = "MATCH(r:Recipe) WHERE r.name = '_" + recipeId + "' \n" +
+                "RETURN labels(r)";
+        StatementResult labels = runRequest(request);
+        request = "MATCH(r:Recipe) WHERE r.name = '_"+ recipeId + "' WITH r\n" +
                 "MATCH (i:Ingredient)-[:IN]->(r)\n" +
                 "WITH i, r\n" +
-                "MATCH (i)-[:IN]->(r2:Recipe) WHERE labels(r) = labels(r2) \n" +
-                "WITH r2 \n" +
+                "MATCH (i)-[:IN]->(r2:Recipe) WHERE ";
+        while (labels.hasNext()) {
+            Record record = labels.next();
+            Iterable<Value> allLabels = record.values().get(0).values();
+            for(Value label : allLabels){
+                if(!label.toString().replaceAll("\"", "").equals("Recipe")){
+                    request += "r2:" + label.toString().replaceAll("\"", "") + " OR ";
+                }
+            }
+        }
+        request = request.substring(0, request.length() -3);
+        request += " \nWITH r2 \n" +
                 "MATCH (u:User)-[:PROPOSED]->(r2) \n" +
-                "RETURN u.name;";
+                "RETURN DISTINCT u.name";
         return runRequest(request);
     }
 
