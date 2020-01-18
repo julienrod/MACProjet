@@ -109,46 +109,44 @@ public class Neo4jDAO implements AutoCloseable
     }
 
     public StatementResult getSimilarUsers(String recipeId){
-        //TODO Controller si cette requête marche bel et bien avec une base de données plus fournie
-        String request = "MATCH(r:Recipe) WHERE r.name = '_" + recipeId + "' \n" +
-                "RETURN labels(r)";
-        StatementResult labels = runRequest(request);
-        request = "MATCH(r:Recipe) WHERE r.name = '_"+ recipeId + "' WITH r\n" +
+        StringBuilder request = new StringBuilder("MATCH(r:Recipe) WHERE r.name = '_" + recipeId + "' \n" +
+                "RETURN labels(r)");
+        StatementResult labels = runRequest(request.toString( ));
+        request = new StringBuilder("MATCH(r:Recipe) WHERE r.name = '_" + recipeId + "' WITH r\n" +
                 "MATCH (i:Ingredient)-[:IN]->(r)\n" +
                 "WITH i, r\n" +
-                "MATCH (i)-[:IN]->(r2:Recipe) WHERE ";
+                "MATCH (i)-[:IN]->(r2:Recipe) WHERE ");
         while (labels.hasNext()) {
             Record record = labels.next();
             Iterable<Value> allLabels = record.values().get(0).values();
             for(Value label : allLabels){
                 if(!label.toString().replaceAll("\"", "").equals("Recipe")){
-                    request += "r2:" + label.toString().replaceAll("\"", "") + " OR ";
+                    request.append("r2:").append(label.toString( ).replaceAll("\"", "")).append(" OR ");
                 }
             }
         }
-        request = request.substring(0, request.length() -3);
-        request += " \nWITH r2 \n" +
-                "MATCH (u:User)-[:PROPOSED]->(r2) \n" +
-                "RETURN DISTINCT u.name";
-        return runRequest(request);
+        request = new StringBuilder(request.substring(0, request.length( ) - 3));
+        request.append(" \nWITH r2 \n" + "MATCH (u:User)-[:PROPOSED]->(r2) \n" + "RETURN DISTINCT u.name");
+        return runRequest(request.toString( ));
     }
 
     public StatementResult getRecommandation(long userId){
-        //TODO Controller si cette requête marche bel et bien avec une base de données plus fournie
-        String partieRecurente = "WITH usr, u \n" +
-                "MATCH (usr)-[:LIKE]->(r:Recipe)\n" +
-                "WITH usr, u, r\n" +
-                "MATCH (u)-[:PROPOSED]->(result:Recipe) WHERE labels(result) = labels(r) AND  " +
-                "NOT (usr)-[:LIKE]->(result)\n AND NOT (usr) = (u)" +
-                "RETURN result.name \n";
-        String request = "MATCH(usr:User) WHERE usr.name = '_"+ userId + "' \n" +
+        String request = "MATCH(usr:User) WHERE usr.name = '_" + userId + "' \n" +
                 "WITH usr\n" +
                 "MATCH(usr)-[:LIKE]->(u:User) \n" +
-                partieRecurente +
-                "UNION MATCH(usr)-[:LIKE]->(mitm:User)-[:Like]->(u:User) \n" +
-                partieRecurente +
-                "UNION MATCH(usr)-[:LIKE]->(mitm:Recipe)<-[:PROPOSED]-(u:User)\n" +
-                partieRecurente;
+                "WITH usr, u \n" +
+                "MATCH (u)-[:PROPOSED]->(result:Recipe) WHERE NOT (usr)-[:LIKE]->(result)\n" +
+                "AND NOT (usr) = (u)\n" +
+                "RETURN DISTINCT result.name\n" +
+                "UNION MATCH(usr:User) WHERE usr.name = '_" + userId + "' \n" +
+                "WITH usr\n" +
+                "MATCH(usr)-[:LIKE]->(mitm:User)-[:LIKE]->(u:User) \n" +
+                "WITH usr, u \n" +
+                "MATCH (usr)-[:LIKE]->(i:Ingredient) \n" +
+                "WITH usr, u, i \n" +
+                "MATCH (u)-[:PROPOSED]->(result:Recipe)<-[:IN]-(i) WHERE  NOT (usr)-[:LIKE]->(result)\n" +
+                "AND NOT (usr) = (u)\n" +
+                "RETURN DISTINCT result.name\n";
         return runRequest(request);
     }
 }

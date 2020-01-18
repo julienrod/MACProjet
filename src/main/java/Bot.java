@@ -49,7 +49,7 @@ public class Bot extends TelegramLongPollingBot {
                                 " préparation\n Exemple: 1h 30m");
                         break;
                     case 2:
-                        if (!newRecipeRegex(userId, message_text, "([0-9]+m|[0-9]+h|[0-9]+h [0-9]+m)")) {
+                        if (newRecipeRegex(userId, message_text, "([0-9]+m|[0-9]+h|[0-9]+h [0-9]+m)")) {
                             message = new SendMessage().setChatId(chat_id).setText("Format incorrect\n Exemple: 1h 30m");
                         } else {
                             message = new SendMessage().setChatId(chat_id).setText("Veuillez spécifier le nombre de" +
@@ -57,7 +57,7 @@ public class Bot extends TelegramLongPollingBot {
                         }
                         break;
                     case 3:
-                        if (!newRecipeRegex(userId, message_text, "([0-9]+(kcal)?)")) {
+                        if (newRecipeRegex(userId, message_text, "([0-9]+(kcal)?)")) {
                             message = new SendMessage().setChatId(chat_id).setText("Format incorrect\n Exemple: 250kcal");
                         } else {
                             message = new SendMessage().setChatId(chat_id).setText("Veuillez décrire la recette");
@@ -153,7 +153,7 @@ public class Bot extends TelegramLongPollingBot {
                 message = new SendMessage( ).setChatId(chat_id).setText(test);
             }else if (message_text.startsWith("/userscooking ")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(getUserCooking(message_text.substring(14)));
-            }else if (message_text.equals("/recommendations")) {
+            }else if (message_text.equals("/recommandations")) {
                 message = new SendMessage( ).setChatId(chat_id).setText(getRecommandation(userId));
             }else if (message_text.equals("/help")) {
                 message = new SendMessage().setChatId(chat_id).setText(
@@ -167,27 +167,22 @@ public class Bot extends TelegramLongPollingBot {
                     "/recipesbytools [t1, t2, ...] -> Affiche les recettes ayant pour ustensiles [t1, t2, ...]\n" +
                     "/recipesbytime [temps] -> Affiche les recettes prenant [temps] à réaliser à 5 minutes près\n" +
                     "/userscooking [id]-> Affiche les utilisateurs ayant fait des recettes similaires.\n" +
-                    "/recommendations -> Propose des recettes sur la base de celles consultées jusqu'à présent\n" +
+                    "/recommandations -> Propose des recettes sur la base de celles consultées jusqu'à présent\n" +
                     "/help -> Affiche la liste des commandes disponibles");
             } else {
-                message = new SendMessage().setChatId(chat_id).setText(message_text);
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText("Update message text").setCallbackData("update_msg_text"));
-                rowsInline.add(rowInline);
-                markupInline.setKeyboard(rowsInline);
-                message.setReplyMarkup(markupInline);
+                message = new SendMessage().setChatId(chat_id).setText("Je ne connais pas cette commande.\n Pour plus d'infos : /help");
             }
             try {
-                execute(message);
+                if (message != null) {
+                    execute(message);
+                }
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
         } else if (update.hasCallbackQuery()) {
             //A utiliser pour rajouter des like et nothankyou
             String call_data = update.getCallbackQuery().getData();
-            long message_id = update.getCallbackQuery().getMessage().getMessageId();
+            //long message_id = update.getCallbackQuery().getMessage().getMessageId();
             long chat_id = update.getCallbackQuery().getMessage().getChatId();
             if (call_data.startsWith("nothankyou ")){
                 String userId = call_data.substring(11);
@@ -242,14 +237,14 @@ public class Bot extends TelegramLongPollingBot {
         Pattern pat = Pattern.compile(regex);
         Matcher match = pat.matcher(list);
         if (!match.find()) {
-            return false;
+            return true;
         }
         List<String> myList = Collections.singletonList(list.toLowerCase());
         List<List<String>> newRecipe = addRecipeData.get(id);
         newRecipe.add(myList);
         addRecipeData.put(id, newRecipe);
         addRecipeStatus.put(id, ++state);
-        return true;
+        return false;
     }
 
     private void addNewRecipe(long id) {
@@ -304,7 +299,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String getRecipeById(String recipeId){
-        Document documentation = MongoDBDAO.getInstance().findDocument(recipeId);
+        Document documentation = MongoDBDAO.getInstance().findRecipe(recipeId);
         StatementResult ingredients = Neo4jDAO.getInstance().getRecipeParts(recipeId, "IN", ",rel.quantite");
         StatementResult tools = Neo4jDAO.getInstance().getRecipeParts(recipeId, "USEFULL", "");
         StatementResult user = Neo4jDAO.getInstance().getRecipeParts(recipeId, "PROPOSED", ",rel.date");
@@ -365,7 +360,7 @@ public class Bot extends TelegramLongPollingBot {
         while (str.hasNext()) {
             Record record = str.next();
             String recipeId = record.get(0).asString().substring(1);
-            Document recipe = MongoDBDAO.getInstance().findDocument(recipeId);
+            Document recipe = MongoDBDAO.getInstance().findRecipe(recipeId);
             result.append(recipeId).append("\t\t").append(recipe.get("name")).append("\n");
         }
         if (result.toString().equals("")) {
@@ -407,8 +402,8 @@ public class Bot extends TelegramLongPollingBot {
         {
             Record record = recommandations.next();
             String recommandation = record.get(0).asString().substring(1);
-            Document user = MongoDBDAO.getInstance().findUser(recommandation);
-            result.append(userId).append("\t\t").append(user.get("name\n")).append("\n");
+            Document recipe = MongoDBDAO.getInstance().findRecipe(recommandation);
+            result.append(recommandation).append("\t\t").append(recipe.get("name")).append("\n");
         }
         return result.toString();
     }

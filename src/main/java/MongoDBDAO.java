@@ -15,12 +15,11 @@ import static com.mongodb.client.model.Filters.eq;
 
 public class MongoDBDAO {
     private static MongoDBDAO instance;
-    private MongoClientURI connectionString;
     private MongoClient mongoclient;
-    private MongoDatabase getDatabase(String database){
-        connectionString = new MongoClientURI("mongodb://localhost:27017");
+    private MongoDatabase getDatabase(){
+        MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         mongoclient = new MongoClient(connectionString);
-        return mongoclient.getDatabase(database);
+        return mongoclient.getDatabase("syugardaddy");
     }
     private MongoDBDAO(){}
     public static MongoDBDAO getInstance() {
@@ -30,7 +29,7 @@ public class MongoDBDAO {
         return instance;
     }
     public void check(String firstName, String lastName, int userId, String username) {
-        MongoDatabase database = getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase( );
         MongoCollection<Document> collection = database.getCollection("user");
 
         long found = collection.count(Document.parse("{id : " + Integer.toString(userId) + "}"));
@@ -51,53 +50,47 @@ public class MongoDBDAO {
     }
 
     public ObjectId addRecipe(String recipeName, String recipeDescription, int time, int kcal) {
-        MongoDatabase database = getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase( );
         MongoCollection<Document> collection = database.getCollection("recipe");
         Document doc = new Document("name", recipeName)
                 .append("description", recipeDescription)
                 .append("time", time)
                 .append("kcal", kcal);
         collection.insertOne(doc);
-        ObjectId id = (ObjectId)doc.get( "_id" );
-        return id;
+        return (ObjectId)doc.get( "_id" );
     }
 
-    public Document findDocument(String id){
+    public Document findRecipe(String id){
         MongoDatabase database = mongoclient.getDatabase("syugardaddy");
         MongoCollection<Document> collection = database.getCollection("recipe");
-        Document doc = collection.find(eq("_id", new ObjectId(id))).first();
-        return doc;
+        return collection.find(eq("_id", new ObjectId(id))).first();
     }
 
     public Document findUser(String id){
-        MongoDatabase database = getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase( );
         MongoCollection<Document> collection = database.getCollection("user");
-        Document doc = collection.find(eq("id", Integer.parseInt(id))).first();
-        return doc;
+        return collection.find(eq("id", Integer.parseInt(id))).first();
     }
 
     public FindIterable<Document> findDocumentByTime(int time){
-        MongoDatabase database = getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase( );
         MongoCollection<Document> collection = database.getCollection("recipe");
         int min = time -5;
         int max = time +5;
-        FindIterable<Document> docs = collection.find(Filters.and(Filters.gte("time",
+        return collection.find(Filters.and(Filters.gte("time",
                 min), Filters.lte("time",  max)));
-        return docs;
     }
 
     public FindIterable<Document> findDocumentByCalories(int calories){
-        MongoDatabase database = getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase( );
         MongoCollection<Document> collection = database.getCollection("recipe");
-        FindIterable<Document> docs = collection.find(Filters.and(Filters.gte("kcal",
+        return collection.find(Filters.and(Filters.gte("kcal",
                 calories - 50), Filters.lte("kcal",  calories)));
-        return docs;
     }
 
     public Document getRandomRecipe(){
-        MongoDatabase database = getDatabase("syugardaddy");
+        MongoDatabase database = getDatabase( );
         MongoCollection<Document> collection = database.getCollection("recipe");
-        Document doc = collection.aggregate(Arrays.asList(Aggregates.sample(1))).first();
-        return doc;
+        return collection.aggregate(Arrays.asList(Aggregates.sample(1))).first();
     }
 }
